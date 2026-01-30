@@ -1,1 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>InfoTrust AI</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white p-6 rounded-xl shadow-md w-full max-w-xl" x-data="{ text: '', result: null }">
+
+    <h1 class="text-2xl font-bold mb-4 text-center">InfoTrust AI</h1>
+
+    <p class="text-gray-600 mb-4 text-center">
+      Vérifiez si une information est fiable ou trompeuse.
+    </p>
+
+    <textarea
+      class="w-full border rounded p-3 mb-4"
+      rows="5"
+      placeholder="Collez un texte ou une affirmation ici..."
+      x-model="text">
+    </textarea>
+
+    <button
+      class="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
+      @click="result = 'Analyse en cours… (simulation)'">
+      Analyser
+    </button>
+
+    <div x-show="result" class="mt-4 p-4 bg-gray-100 rounded">
+      <strong>Résultat :</strong>
+      <p x-text="result"></p>
+    </div>
+
+  </div>
+
+</body>
+</html>
 
