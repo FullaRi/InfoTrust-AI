@@ -1,46 +1,67 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>InfoTrust AI</title>
-
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Alpine.js -->
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen">
 
-  <div class="bg-white p-6 rounded-xl shadow-md w-full max-w-xl" x-data="{ text: '', result: null }">
-
-    <h1 class="text-2xl font-bold mb-4 text-center">InfoTrust AI</h1>
-
-    <p class="text-gray-600 mb-4 text-center">
-      Vérifiez si une information est fiable ou trompeuse.
-    </p>
-
-    <textarea
-      class="w-full border rounded p-3 mb-4"
-      rows="5"
-      placeholder="Collez un texte ou une affirmation ici..."
-      x-model="text">
-    </textarea>
-
-    <button
-      class="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
-      @click="result = 'Analyse en cours… (simulation)'">
-      Analyser
-    </button>
-
-    <div x-show="result" class="mt-4 p-4 bg-gray-100 rounded">
-      <strong>Résultat :</strong>
-      <p x-text="result"></p>
+<!-- NAVBAR -->
+<header class="bg-white shadow">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="text-xl font-bold text-blue-600">InfoTrust AI</span>
     </div>
-
+    <nav class="space-x-6 text-gray-600">
+      <a href="#" class="text-blue-600 font-semibold">Accueil</a>
+      <a href="#">Comment ça marche</a>
+      <a href="#">Contact</a>
+    </nav>
   </div>
+</header>
+
+<!-- HERO -->
+<section class="max-w-5xl mx-auto px-6 py-20">
+  <h1 class="text-4xl font-extrabold mb-6">FACT CHECKING</h1>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <input
+      type="text"
+      placeholder="Entrer le texte ou l’URL à vérifier"
+      class="w-full border rounded p-4 mb-6"
+    />
+
+    <button class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded text-lg">
+      ANALYSER
+    </button>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="max-w-6xl mx-auto px-6 pb-20 grid md:grid-cols-3 gap-6">
+  <div class="bg-white p-6 rounded-xl shadow text-center">
+    <h3 class="font-bold mb-2">Analyse en temps réel</h3>
+    <p class="text-gray-600 text-sm">
+      Vérifie instantanément si une information est fiable.
+    </p>
+  </div>
+
+  <div class="bg-white p-6 rounded-xl shadow text-center">
+    <h3 class="font-bold mb-2">Rapports impartiaux</h3>
+    <p class="text-gray-600 text-sm">
+      Une analyse transparente basée sur des sources multiples.
+    </p>
+  </div>
+
+  <div class="bg-white p-6 rounded-xl shadow text-center">
+    <h3 class="font-bold mb-2">Combat la désinformation</h3>
+    <p class="text-gray-600 text-sm">
+      Aide à réduire la propagation des fausses nouvelles.
+    </p>
+  </div>
+</section>
 
 </body>
 </html>
-
