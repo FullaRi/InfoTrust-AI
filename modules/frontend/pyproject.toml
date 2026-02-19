@@ -1,0 +1,16 @@
+[project]
+name = "infotrustai-frontend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.2",
+    "flask-mailman>=1.1.1",
+    "flask-wtf>=1.2.2",
+    "gunicorn>=25.1.0",
+    "marshmallow>=4.1.1",
+    "python-dotenv>=1.2.1",
+    "pyyaml>=6.0.3",
+    "requests>=2.32.5",
+]

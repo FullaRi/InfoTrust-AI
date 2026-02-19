@@ -1,0 +1,2936 @@
+{
+  "name": "INFO TRUST AI JALON 2",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## INPUT INGESTION",
+        "height": 672,
+        "width": 2640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "a254a4d5-0e62-431f-8298-2894e4cc1917",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n    \"description\": \"Splits an input claim into multiple subclaims.\",\n    \"parameters\": {\n        \"type\": \"object\",\n        \"properties\": {\n            \"input_claim\": {\"type\": \"string\", \"description\": \"The original claim\"},\n            \"subclaims\": {\n                \"type\": \"array\",\n                \"items\": {\"type\": \"string\"},\n                \"description\": \"The subclaims derived from the input claim.\"\n            }\n        }\n    }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        800
+      ],
+      "id": "2e7c77bd-34fe-4639-9b34-503a807a4719",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n    \"title\": \"Subclaims Classification\",\n    \"description\": \"Classifies subclaims as either 'verifiable' or 'non-verifiable'.\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"subclaim_classification\": {\n          \"description\": \"A list of subclaims with their classification types.\",\n          \"type\": \"array\",\n          \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"subclaim\": {\"type\": \"string\", \"description\": \"The subclaim text.\"},\n                    \"verifiability\": {\n                        \"enum\": [\"verifiable\", \"non-verifiable\"],\n                        \"description\": \"Classification type of the subclaim.\"\n                    },\n                    \"verifiability_explanation\": {\"type\": \"string\", \"description\": \"The brief explanation of classification\"}\n                }\n            }\n        }\n    }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        784
+      ],
+      "id": "f6e5bcc6-bc02-44de-bd61-0d399f9be184",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        800
+      ],
+      "id": "50110191-d961-4b12-a0aa-2d91e9668698",
+      "name": "LLMG1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZJvRCbEtMk72e5l7",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        192,
+        784
+      ],
+      "id": "346636a9-3957-4eca-8c34-3df28076b3bc",
+      "name": "LLMG2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZJvRCbEtMk72e5l7",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.subclaim_classification",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        880,
+        544
+      ],
+      "id": "152a1919-62b2-4edb-bb26-29600f7a864d",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "08ed81ed-bcd7-4a9f-90b3-6e3cc0a6e766",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2352,
+        624
+      ],
+      "id": "55804797-2eeb-4c3e-9c71-a6c12c894629",
+      "name": "Webhook",
+      "webhookId": "08ed81ed-bcd7-4a9f-90b3-6e3cc0a6e766"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f6643aa-5bd0-4787-b0ed-49933a51d504",
+              "leftValue": "={{ $json.user_input.length }}",
+              "rightValue": 500,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1840,
+        624
+      ],
+      "id": "b542a102-53fb-40da-9494-12bf3f251f22",
+      "name": "Input Length Validation"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error_message\": \"Le nombre maximum de caractères autorisé est 500.\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1600,
+        800
+      ],
+      "id": "c70812dd-e24d-4321-95bb-c30d19e6d74e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error_message\": \"Merci d’entrer une information factuelle (une news). Les questions, opinions, commentaires ou instructions ne peuvent pas être analysés.\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -912,
+        736
+      ],
+      "id": "2ce7674f-ce63-4d69-bcb6-57244f1ce3bd",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error_message\": \"Le texte que vous avez entré n’est pas clair pour notre analyse. Pour continuer, merci d’entrer un fait réel, vérifiable et formulé de manière déclarative\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -128,
+        784
+      ],
+      "id": "992f68b6-2d13-441e-9e9d-843dc28e9f6b",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02797b20-2a18-44d0-a2de-c749f9b1fb83",
+              "name": "discarded_suclaims",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        208
+      ],
+      "id": "20610dcd-7358-4d1c-aa91-25a36253f231",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "### Verifiable Subclaims Filter",
+        "height": 208,
+        "width": 480,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        848,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "95777af0-e523-4067-a7f7-2306b03043f2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error_message\": \"Le texte que vous avez entré n’est pas clair pour notre analyse. Pour continuer, merci d’entrer un fait réel, vérifiable et formulé de manière déclarative\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -912,
+        896
+      ],
+      "id": "49c87d85-1485-4e1a-99b9-57892f52274e",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "content": "## INPUT VALIDATION",
+        "height": 672,
+        "width": 1200,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1888,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "e50d2a1a-8e40-4e4d-a3d9-e230baa8e137",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error_message\": \"Le texte que vous avez entré n’est pas clair pour notre analyse. Pour continuer, merci d’entrer un fait réel, vérifiable et formulé de manière déclarative\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        592,
+        768
+      ],
+      "id": "5e8f64f5-f3a6-40ac-94cd-ecd7bd3c125a",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error_message\": \"Le texte que vous avez entré n’est pas clair pour notre analyse. Pour continuer, merci d’entrer un fait réel, vérifiable et formulé de manière déclarative\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1776,
+        752
+      ],
+      "id": "3330f959-47bf-4fd5-92df-d829ca61a809",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "content": "## QUESTIONS GENERATION",
+        "height": 672,
+        "width": 624,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2192,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "3eb57d91-2b8e-4109-a741-553cb7637c6d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n    \"title\": \"Subclaim with questions\",\n    \"type\": \"object\",\n    \"properties\": {\n      \"subclaim_with_questions\": {\n        \"description\": \"A list of subclaims, each with a corresponding set of generated questions.\",\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"subclaim\": {\n              \"type\": \"string\",\n              \"description\": \"A subclaim derived from the main claim.\"\n            },\n            \"questions\": {\n              \"type\": \"array\",\n              \"items\": {\"type\": \"string\"},\n              \"description\": \"A list of questions generated based on the subclaim.\"\n            }\n          },\n          \"required\": [\"subclaim\", \"questions\"]\n        }\n      }\n    },\n  \"required\": [\"subclaim_with_questions\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2464,
+        736
+      ],
+      "id": "97b0fc5f-46c6-45d4-ae4e-007005058676",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "verifiable_subclaims",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        528
+      ],
+      "id": "80260122-4b27-4707-bcf7-9fc6cacf3f2c",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.subclaim_with_questions",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3024,
+        512
+      ],
+      "id": "9a055282-14c0-4f49-a690-cff50bc3e601",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "questions",
+        "include": "allOtherFields",
+        "options": {
+          "destinationFieldName": "question"
+        }
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3248,
+        512
+      ],
+      "id": "a59fd575-ef6c-4f11-824e-8ac330f4a21e",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "content": "## RELEVANCE FILTER\n",
+        "height": 512,
+        "width": 1216,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6368,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "4bb442c2-be91-4f28-a475-9cc518cdfef4",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "news",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "subclaim, question",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        4336,
+        496
+      ],
+      "id": "a277eacf-4abd-4236-b454-5c7404cec375",
+      "name": "Split Out3"
+    },
+    {
+      "parameters": {
+        "content": "## ONLINE SEARCH",
+        "height": 512,
+        "width": 1232,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2976,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "30d0e2f6-a308-40ff-9d48-89dcfa265cc7",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## CREDIBILITY CHECK\n### MediaBiasFactCheck ",
+        "height": 512,
+        "width": 2000,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4240,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "522b8cc3-8e8b-48fd-87a5-dfa6f2f8e90e",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a8e4ac7-5159-46d0-85b8-dc5c33e5915a",
+              "name": "news.link_domain",
+              "value": "={{(()=>{\n  let domain = $json.news.link.extractDomain();\n\n  let has_subdomain = domain.split('.').length > 2;\n\n  if (!has_subdomain && !domain.startsWith('www')) {\n    domain = 'www.' + domain;\n  }\n\n  return domain;\n})()}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4608,
+        496
+      ],
+      "id": "db131ea7-12c7-4773-be99-0dc46fc6ba0d",
+      "name": "Add Normalised Domain"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0b365fd9-0ee7-4d6c-a183-fef09bd19cb9",
+              "leftValue": "={{(()=>{\n\n  if ($json.news.link_domain.endsWith(\".gov\") ||  $json.news.link_domain.endsWith(\".edu\") || $json.news.link_domain.endsWith(\".org\")) {\n    return true;\n  }\n\n  return false;\n})()}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5104,
+        656
+      ],
+      "id": "09dde707-5cb8-4afe-9285-a9993c44ee2c",
+      "name": "Check Domain suffix"
+    },
+    {
+      "parameters": {
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "yXtFFXc4X2XX5som",
+          "mode": "list",
+          "cachedResultName": "media_bias",
+          "cachedResultUrl": "/projects/byNdr9DxNa5xRvAX/datatables/yXtFFXc4X2XX5som"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "url",
+              "keyValue": "={{ $json.news.link_domain }}"
+            },
+            {
+              "keyName": "credibility",
+              "keyValue": "high credibility"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        5440,
+        672
+      ],
+      "id": "4b9d09a6-7283-4c03-8583-74b6ba5a75d6",
+      "name": "Check MediaBias DB",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c032e0ee-5dc8-4cc0-8e8e-6bcdb8875899",
+              "leftValue": "={{ $json.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5792,
+        480
+      ],
+      "id": "57cf9d48-44de-4e6f-b67c-60a953a78b20",
+      "name": "Has Items ?",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d92fb000-cb68-466a-9494-c4a4d2939329",
+              "leftValue": "={{ $json.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        5456,
+        480
+      ],
+      "id": "b54c8cda-9cc6-45e4-a6fb-24ad28c16aaf",
+      "name": "Filter Empty Items",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cbf09d25-326d-4d32-9f48-657c1587378f",
+              "leftValue": "={{ $json.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        7376,
+        464
+      ],
+      "id": "d7a148e6-a350-4055-9f22-265bb6c4d75d",
+      "name": "Has Items ?1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/news",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3792,
+        640
+      ],
+      "id": "acf3afdd-a082-4d99-9801-389367cce05f",
+      "name": "Serper Search",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "boZfzFVCqaN0YSh3",
+          "name": "Serper Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## SCRAPE LINKS\n",
+        "height": 528,
+        "width": 1088,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7888,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "2dd05e1e-d6b5-4657-8dcb-797883ae636d",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n  const itemData = item.json.output;\n\n  const n_question = itemData.question;\n  const n_subclaim = itemData.subclaim;\n  const n_results = [];\n\n  for (const result of itemData.results) {\n    \n    if (result.is_relevant) {\n      n_results.push(result);\n    }\n  \n  }\n  \n  \n  output.push({\n    subclaim: n_subclaim,\n    question: n_question,\n    results: n_results\n  });\n}\n\nreturn output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6912,
+        464
+      ],
+      "id": "bbfec67d-a843-48f6-a67f-4efb4fbe1b2d",
+      "name": "Filter No Relevance Items1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "question,subclaim",
+        "options": {
+          "destinationFieldName": "result"
+        }
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        7152,
+        464
+      ],
+      "id": "64c4008b-6caa-4cce-aed5-3be391e193a8",
+      "name": "Split Out4"
+    },
+    {
+      "parameters": {
+        "content": "## EVIDENCE RETRIEVING\n### For each subclaims questions\n",
+        "height": 640,
+        "width": 1440,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        9104,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "061f1db5-fe50-4b17-b960-a9840974268b",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7488,
+        912
+      ],
+      "id": "a6a45ccc-01a6-4dfa-ac4b-d7c7f630a30d",
+      "name": "MOCKUP RELEVANCE AGENT"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4e9b4b37-e3e0-417c-92bd-972c9345551b",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4112,
+        944
+      ],
+      "id": "b770cb4b-800f-4e11-9176-706dc91d6fb0",
+      "name": "MOCKUP SERPER"
+    },
+    {
+      "parameters": {
+        "content": "## EVIDENCE SEEKING",
+        "height": 816,
+        "width": 7728,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2912,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "8bd8cf3d-ba43-4594-891a-2fa878459d57",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        928
+      ],
+      "id": "c70608c3-89e5-4adc-bbde-511b80d573cc",
+      "name": "Question Generation MOCKUP"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4ebd2e7f-2f02-4c30-80ca-57d263682270",
+              "name": "subclaim",
+              "value": "={{ $('Online Search Loop').item.json.subclaim }}",
+              "type": "string"
+            },
+            {
+              "id": "20d7fc6a-8759-48e9-af95-eeaece295003",
+              "name": "question",
+              "value": "={{ $('Online Search Loop').item.json.question }}",
+              "type": "string"
+            },
+            {
+              "id": "6856b772-8381-494f-8e2d-0b23f478a6a8",
+              "name": "news",
+              "value": "={{ $json.news }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4016,
+        640
+      ],
+      "id": "ec89e211-94aa-4d8c-a65a-45d30e20e132",
+      "name": "Online Search Merge Data"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3536,
+        512
+      ],
+      "id": "53b192ba-4332-41fb-a166-d6f0d31c5277",
+      "name": "Online Search Loop"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4928,
+        496
+      ],
+      "id": "411ee5e4-5e19-4c0e-a7cd-a1567a28a4e6",
+      "name": "Credibility Check Loop"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"title\": \"Search Results Relevance Analysis\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"subclaim\": {\n      \"type\": \"string\",\n      \"description\": \"The original subclaim provided as input.\"\n    },\n    \"question\": {\n      \"type\": \"string\",\n      \"description\": \"The original question provided as input.\"\n    },\n    \"results\": {\n      \"type\": \"array\",\n      \"description\": \"A list of search results enriched with relevance analysis.\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"title\": {\n            \"type\": \"string\",\n            \"description\": \"Title of the search result.\"\n          },\n          \"link\": {\n            \"type\": \"string\",\n            \"description\": \"URL of the search result.\"\n          },\n          \"snippet\": {\n            \"type\": \"string\",\n            \"description\": \"Short description or excerpt of the result.\"\n          },\n          \"date\": {\n            \"type\": \"string\",\n            \"description\": \"Publication date or relative time.\"\n          },\n          \"source\": {\n            \"type\": \"string\",\n            \"description\": \"Source or publisher of the result.\"\n          },\n          \"imageUrl\": {\n            \"type\": \"string\",\n            \"description\": \"URL of the associated image.\"\n          },\n          \"link_domain\": {\n            \"type\": \"string\",\n            \"description\": \"Domain name of the result.\"\n          },\n          \"is_relevant\": {\n            \"type\": \"boolean\",\n            \"description\": \"Indicates whether the result is relevant to the question.\"\n          },\n          \"confidence_score\": {\n            \"type\": \"integer\",\n            \"minimum\": 0,\n            \"maximum\": 100,\n            \"description\": \"Confidence score of the relevance decision (0–100).\"\n          }\n        },\n        \"required\": [\n          \"title\",\n          \"link\",\n          \"snippet\",\n          \"is_relevant\",\n          \"confidence_score\"\n        ]\n      }\n    }\n  },\n  \"required\": [\"subclaim\", \"question\", \"results\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        6624,
+        704
+      ],
+      "id": "9ad0f8e8-73a7-4a5b-955d-5bd3e56d6d61",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupérer tous les items\nconst items = $input.all();\n\n// Créer un objet pour grouper par searchParameters.q\nconst grouped = {};\n\n// Parcourir tous les items\nitems.forEach(item => {\n  const question = item.json.question;\n  const news = item.json.news;\n  const subclaim = item.json.subclaim;\n  \n  // Si la query n'existe pas encore, l'initialiser\n  if (!grouped[question]) {\n    grouped[question] = {\n      'question': question,\n      'subclaim': subclaim,\n      'results': []\n    };\n  }\n  \n  // Ajouter les news aux résultats\n  if (news) {\n    grouped[question].results.push(news);\n  }\n});\n\n// Convertir l'objet en tableau\nconst output = Object.values(grouped);\n\n// Retourner le résultat\nreturn output.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6112,
+        464
+      ],
+      "id": "fd1f1f71-031d-414b-8681-c7059818d9ae",
+      "name": "Credibility Check Format Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fbaedef3-a55c-4bff-96a8-5dc4d20feb1a",
+              "name": "user_input",
+              "value": "={{ $json.body.user_input }}",
+              "type": "string"
+            },
+            {
+              "id": "ae354214-1c03-4d51-99c9-36396b1fafa8",
+              "name": "max_subclaim_question",
+              "value": "3",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2096,
+        624
+      ],
+      "id": "233a2cba-0ecc-4a60-a781-67eba0bce87f",
+      "name": "Workflow Input Data"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        11680,
+        464
+      ],
+      "id": "f27829e4-fdf6-4d36-b5fa-01473f6f7aa4",
+      "name": "Respond to Webhook6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "TASK: Semantic Relevance Filtering (Search Evidence Selection)\n\nYou are an AI system specialized in semantic relevance analysis and evidence filtering.\n\nYour role is to analyze search results and determine which ones contain direct or indirect evidence that could help answer a specific question.\n\nGiven an input containing:\n\n- A question\n- A list of search results (title, link, snippet, etc.)\n\nYour task is to:\n\n1. Analyze the question to extract:\n- Main entities\n- Actions or relations\n- Temporal or contextual constraints (if any)\n2. Evaluate each search result based on its title and snippet.\n3. Determine whether the result is relevant to the question.\n\nSTRICT FILTERING RULES\n\nFor each search result:\n\nRelevant (true)\nMark as true only if:\n- The snippet contains information that directly answers the question, OR\n- The snippet contains partial or indirect evidence related to the question’s entities, actions, or time context.\n\nNot Relevant (false)\nMark as false if:\n- The snippet is about a different subject.\n- The snippet refers to the correct subject but in a clearly unrelated context.\n- The snippet is too vague (e.g., homepage, directory, category page).\n- The snippet lacks any useful information for answering the question.\n\nConfidence Score\n\nFor each result, assign a confidence_score from 0 to 100:\n- 90–100: Clearly contains the answer.\n- 70–89: Strong indirect or partial evidence.\n- 40–69: Possibly relevant but unclear.\n- 10–39: Weak or very indirect connection.\n- 0–9: Completely irrelevant.\n\nIMPORTANT REQUIREMENTS\n\n- Preserve all original fields exactly as provided.\n- Do NOT modify titles, snippets, links, or any original values.\n- Only append the following fields to each result:\n\t.\"is_relevant\" (boolean)\n\t.\"confidence_score\" (integer from 0 to 100)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        6480,
+        464
+      ],
+      "id": "30608370-3c28-45b2-9b6a-7f2f1e8cbe7e",
+      "name": "Relevance Check Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.verifiable_subclaims }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "TASK: Evidence Search Question Generation (Structured Retrieval)\n\nYou are an AI system specialized in evidence retrieval and search query generation.\n\nGiven an input subclaim, your task is to:\n- Generate multiple Google search questions that could be used to find evidence verifying the subclaim.\n- Ensure the questions collectively cover different angles and phrasings of the same fact.\n\nIMPORTANT REQUIREMENTS:\n\n- You MUST use the input subclaim EXACTLY as provided.\n- Do NOT paraphrase, shorten, or modify the input subclaim.\n- Do NOT introduce assumptions or additional facts not present in the subclaim.\n\nEach generated question must:\n- Be suitable for use as a Google search query\n- Be clear, concise, and focused on verification\n- Directly relate to the entities and relationship expressed in the subclaim\n\nSTRICT RULES:\n\n- Generate maximun 4 questions for each input subclaim.\n- Questions MUST aim to verify the factual correctness of the subclaim.\n- Use precise and relevant keywords.\n- Incorporate synonyms or alternative phrasings when appropriate.\n- Vary specificity (some questions may be very precise, others slightly broader).\n- Avoid compound or multi-fact questions.\n- Questions must be independently useful for evidence discovery.\n- Output ONLY valid JSON. No explanations, no markdown, no extra text.\n\nEXAMPLES:\n\nExample 1:\n\n{\n\"subclaim: \"Location(Howard_University_Hospital, Washington_D.C.) ::: Verify Howard University Hospital is located in Washington, D.C.\",\n\"questions\": [\n\"Where is Howard University Hospital located?\",\n\"Is Howard University Hospital located in Washington, D.C.?\",\n\"What city is Howard University Hospital in?\",\n\"Howard University Hospital location Washington D.C.\"\n]\n}\n\nExample 2:\n{\n\"subclaim: \"Won(Donald_Trump, 2016_United_States_Presidential_Election) ::: Verify that Donald Trump won the 2016 United States presidential election.\",\n\"questions\": [\n\"Who won the 2016 United States presidential election?\",\n\"Did Donald Trump win the 2016 U.S. presidential election?\",\n\"2016 U.S. presidential election winner Donald Trump\",\n\"Results of the 2016 United States presidential election\"\n]\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2320,
+        528
+      ],
+      "id": "98c46a69-a2f5-458d-9912-0e4d9b4a5a98",
+      "name": "Questions Generation Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output.subclaims }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "TASK: Subclaim Verifiability Classification (Structured Reasoning)\n\nYou are an AI system specialized in claim verification and fact-checking analysis.\n\nGiven a list of input subclaims, your task is to:\n\n1. Analyze each subclaim independently.\n2. Determine whether each subclaim is verifiable or non-verifiable based on objective criteria.\n\nIMPORTANT DEFINITIONS:\n\n- A verifiable subclaim is a factual statement that can be checked against objective, reliable sources and proven true or false.\n- A non-verifiable subclaim is a statement that cannot be objectively verified because it:\n\n\t. Expresses a subjective opinion, belief, or preference\n\t. Is vague or lacks specific, checkable details\n\t. Refers to future events that have not yet occurred\n\t. Makes normative, moral, or ethical judgments\n\t. Describes hypothetical or counterfactual scenarios\n\nIMPORTANT REQUIREMENTS:\n\n- You MUST return each original subclaim EXACTLY as provided.\n- Do NOT paraphrase, shorten, translate, or modify any subclaim.\n- Do NOT add, infer, or assume information not explicitly stated in the subclaim.\n\nEach classification must:\n\n- Apply to one single subclaim\n- Use only one of the following labels:\n\t. \"verifiable\"\n\t. \"non-verifiable\"\n- Include a short explanation justifying the classification\n\nSTRICT RULES:\n\n- Each subclaim must be evaluated independently.\n- The explanation must be concise and factual.\n- Output ONLY valid JSON.\n- No explanations outside the JSON.\n- No markdown.\n- No extra text.\n\nEXAMPLES:\n\nExample 1:\n{\n\"subclaim\": \"The average global temperature increased by 0.8°C between 1880 and 2012.\",\n\"verifiability\": \"verifiable\",\n\"classification_explanation\": \"The statement makes a specific, measurable claim that can be checked against scientific climate records.\"\n}\n\nExample 2:\n{\n\"subclaim\": \"Climate change is the most important issue facing humanity today.\",\n\"verifiability\": \"non-verifiable\",\n\"verifiability_explanation\": \"The statement expresses a subjective judgment that cannot be objectively verified.\"\n}\n\nExample 3:\n{\n\"subclaim\": \"The film 'Parasite' won the Academy Award for Best Picture in 2020.\",\n\"verifiability\": \"verifiable\",\n\"verifiability_explanation\": \"The claim refers to a historical event that can be confirmed using official award records.\"\n}\n\nExample 4:\n{\n\"subclaim\": \"Parasite deserved to win the Academy Award for Best Picture.\",\n\"verifiability\": \"non-verifiable\",\n\"verifiability_explanation\": \"The statement expresses an opinion rather than an objective, checkable fact.\"\n}\n\n\nPlease analyze the following subclaims and classify each one as either verifiable or non-verifiable, following all the rules above."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        560
+      ],
+      "id": "56dde1fa-45e4-4eca-b7df-c272b7e8d867",
+      "name": "Claim Classification Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_input }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "TASK: Claim Predicate Decomposition (Structured Reasoning)\n\nYou are an AI system specialized in information extraction and fact decomposition.\n\nGiven an input claim, your task is to:\n\n1. Identify all atomic facts contained in the claim.\n2. Convert each atomic fact into a predicate-based subclaim.\n\nIMPORTANT REQUIREMENTS:\n\n- You MUST return the original input claim EXACTLY as provided.\n- Do NOT paraphrase, shorten, or modify the original claim.\n- Do NOT add, infer, or assume information not explicitly stated.\n\nEach subclaim must:\n\n- Represent one single verifiable fact\n- Be written in the form of a predicate\n- Include a short verification instruction\n\nSTRICT RULES:\n\n- Each subclaim MUST express exactly ONE verifiable fact.\n- Use clear, consistent, and simple predicate names (e.g., Location, Born, Won, Held).\n- Normalize entity names using underscores (_).\n- Temporal or location details should be included ONLY if explicitly stated in the claim.\n- Avoid compound predicates.\n- Each subclaim must be independently fact-checkable.\n- Output ONLY valid JSON. No explanations, no markdown, no extra text.\n\nHere are examples:\n\nExemple 1 :\n    {\n        \"input_claim\": \"Howard University Hospital and Providence Hospital are both located in Washington, D.C.\",\n        \"subclaims\": [\n            \"Location(Howard_University_Hospital, Washington_D.C.) ::: Verify Howard University Hospital is located in Washington, D.C\",\n            \"Location(Providence_Hospital, Washington_D.C.) ::: Verify Providence Hospital is located in Washington, D.C\"\n        ]\n    }\n\nExemple 2:\n    {\n        \"input_claim\": \"In 1959, former Chilean boxer Alfredo Cornejo Cuevas (born June 6, 1933) won the gold medal in the welterweight division at the Pan American Games (held in Chicago, United States, from August 27 to September 7) in Chicago, United States, and the world amateur welterweight title in Mexico City.\",\n        \"subclaims\": [\n            \"Born(Alfredo_Cornejo_Cuevas, June 6 1933) ::: Verify that Alfredo Cornejo Cuevas was born June 6, 1933.\",\n            \"Won(Alfredo_Cornejo_Cuevas, the gold medal in the welterweight division at the Pan American Games in 1959) ::: Verify that Alfredo Cornejo Cuevas won the gold medal in the welterweight division at the Pan American Games in 1959.\",\n            \"Held(The Pan American Games in 1959, Chicago United States) ::: Verify that the Pan American Games in 1959 were held in Chicago, United States.\",\n            \"Won(Alfredo_Cornejo_Cuevas, the world amateur welterweight title in Mexico City) ::: Verify that Alfredo Cornejo Cuevas won the world amateur welterweight title in Mexico City.\"\n        ]\n    }\n\nExemple 3: \n{\n    \"input_claim\": \"Despite losing the popular vote, Donald Trump won the 2016 United States presidential election and became the 45th President of the United States.\",\n    \"subclaims\": [\n        \"Lost(Donald_Trump, Popular_Vote_2016_US_Election) ::: Verify that Donald Trump lost the popular vote in the 2016 United States presidential election.\",\n        \"Won(Donald_Trump, 2016_United_States_Presidential_Election) ::: Verify that Donald Trump won the 2016 United States presidential election.\",\n\"Became(Donald_Trump, 45th_President_of_the_United_States) ::: Verify that Donald Trump became the 45th President of the United States.\"\n     ]\n}\n\n\nPlease analyze the following input claim and return its predicate-based decomposition strictly following all rules above.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -528,
+        576
+      ],
+      "id": "d570b536-7555-4d49-a828-55b17b8616ac",
+      "name": "Claim Decomposition Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.user_input }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "NEWS",
+              "description": "A declarative text that states one or more factual claims about real-world events, people, organizations, or situations. \nThe information must be potentially verifiable as true or false.  The text is informational in nature and does not express opinions, questions, instructions, or creative content.  \n\nExamples:  \n- \"Donald Trump won the 2016 United States presidential election.\"  \n- \"The World Health Organization declared COVID-19 a pandemic in March 2020.\"  \n- \"Apple announced the iPhone 15 in September 2023.\""
+            },
+            {
+              "category": "NOT_NEWS",
+              "description": "Any input that is not a factual news statement.\nThis includes questions, opinions, personal beliefs, instructions, commands, creative writing, summaries, explanations, prompts, or incomplete text fragments.\n\nExamples:\n\n- \"Did Donald Trump really win the 2016 election?\"\n- \"I think this election was unfair.\"\n- \"Explain why the election matters.\"\n- \"Summarize this article.\"\n- \"Donald Trump 2016 election\""
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other",
+          "systemPromptTemplate": "You are a text classification system. Your task is to classify the user input into exactly ONE of the following two categories: NEWS or NOT_NEWS.\n\nChoose the category that best fits the input according to the definitions below.\n\nDon't explain, and only output the json."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -1360,
+        592
+      ],
+      "id": "3d9615c0-d8c3-457b-b564-963ad1f38d57",
+      "name": "Input Type Validation Agent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d047226d-0428-4a4f-be6f-30ab83ce4171",
+              "leftValue": "={{ $json.verifiability }}",
+              "rightValue": "verifiable",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1152,
+        544
+      ],
+      "id": "8d3bac23-a0b2-4a8f-b7ce-4d745f7ac82d",
+      "name": "Filter - Verifiable Subclaim",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f111ede4-41e3-4199-969b-81ae61d07abb",
+              "leftValue": "={{ $json.verifiability }}",
+              "rightValue": "verifiable",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1136,
+        208
+      ],
+      "id": "133d1e88-0f80-437c-8dfa-d9f058d5adfa",
+      "name": "Filter - No Verifiable Subclaim",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "46ccbd0f-312b-463e-bc11-155253008ef1",
+              "leftValue": "={{ $input.item.json.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1472,
+        544
+      ],
+      "id": "fe5ab34e-39ef-4283-afc3-42b47de0d9d4",
+      "name": "Has Items"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        816
+      ],
+      "id": "083d0a00-42d8-446f-942b-f9ff326a297b",
+      "name": "LLMG",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZJvRCbEtMk72e5l7",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        736
+      ],
+      "id": "e59488a7-af4d-48e1-aa9e-b538740ae659",
+      "name": "LLMG3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZJvRCbEtMk72e5l7",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        6480,
+        704
+      ],
+      "id": "2333a58c-93a7-459b-8d7a-d89c0be336b8",
+      "name": "LLMG4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZJvRCbEtMk72e5l7",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## VERDICT PREDICTION",
+        "height": 736,
+        "width": 848,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        10768,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "e975994c-25d4-4aee-98de-167fe8d00a68",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## TASKS\n\n- Ajout a la base de donnée\n\n   scientific_domains = [\n            'nature.com', 'science.org', 'nih.gov', 'pubmed.ncbi.nlm.nih.gov', \n            'sciencedirect.com', 'springer.com', 'wiley.com', 'oxford', 'cambridge.org', \n            'cell.com', 'nejm.org', 'thelancet.com', 'bmj.com', 'pnas.org'\n        ]\n",
+        "height": 272,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2352,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "f8ecc93d-1209-4695-b06b-ac7bc183b780",
+      "name": "Sticky Note10"
+    }
+  ],
+  "pinData": {
+    "MOCKUP RELEVANCE AGENT": [
+      {
+        "json": {
+          "result": {
+            "title": "Alassane Ouattara | Education, Age, Religion, & Facts",
+            "link": "https://www.britannica.com/biography/Alassane-Ouattara",
+            "snippet": "Alassane Ouattara (born January 1, 1942, Dimbokro, Côte d'Ivoire, French West Africa) is an Ivoirian economist and politician who was elected president of Côte...",
+            "date": "1 week ago",
+            "source": "Britannica",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_QikNvFawJOyDh_Mn_zHnVTd3dBxV4U55ed5vuTwMMXrvgDWMUUkn9BM&usqp=CAI&s",
+            "link_domain": "www.britannica.com",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Who is the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ivory Coast president appoints brother as vice prime minister",
+            "link": "https://www.reuters.com/world/africa/ivory-coast-president-appoints-brother-vice-prime-minister-2026-01-23/",
+            "snippet": "Ouattara, 84, a former deputy managing director of the International Monetary Fund, has led the country since 2011 and has said that he intends...",
+            "date": "2 weeks ago",
+            "source": "Reuters",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSB5DFSfS2l2gghmK5RHUMyw0xdinHEKFgebIQ6cezST5rx_ofqXQ8Yvo&usqp=CAI&s",
+            "link_domain": "www.reuters.com",
+            "is_relevant": true,
+            "confidence_score": 90
+          },
+          "question": "Who is the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ivory Coast election: President Alassane Ouattara wins fourth term after main rivals barred",
+            "link": "https://www.bbc.com/news/articles/cddrzl9nmm2o",
+            "snippet": "Ivory Coast president, 83, secures fourth term after two rivals barred · 27 October 2025 · Ivory Coast's President Alassane Ouattara has secured...",
+            "date": "Oct 27, 2025",
+            "source": "BBC",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpxmzt8ne7s5NFR4e9fsXUbxexVkCkVAWfSsevMKZIvVwFDeiz0sHCops&usqp=CAI&s",
+            "link_domain": "www.bbc.com",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Who is the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "What Ouattara's reelection means for Cote d'Ivoire",
+            "link": "https://www.dw.com/en/ivory-coast-president-election-2025-alassane-ouattara-future-of-democracy/video-75029013",
+            "snippet": "Alassane Ouatarra, Cote d'Ivoire's president since 2010, was reelected in a landslide win in October. Though the country has flourished...",
+            "date": "Dec 8, 2025",
+            "source": "DW.com",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKpEyE1ltLHzXRR4x2lKFFqtItIwdo6DGT_N_m6qrPYLmaEzDKe5q8kJE&usqp=CAI&s",
+            "link_domain": "www.dw.com",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Who is the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ivory Coast's president will seek a fourth term after removing term limits from constitution",
+            "link": "http://constitutionnet.org/news/ivory-coasts-president-will-seek-fourth-term-after-removing-term-limits-constitution",
+            "snippet": "Ouattara's candidacy is contested after he changed the constitution in 2016 to remove the presidential term limit. The 83-year-old president...",
+            "date": "Jul 29, 2025",
+            "source": "ConstitutionNet",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTO5zfAvgbWnLLDZVvQoK42lf1OhraxiFxygKhnuzrrV5X72pcq-P0YNdg&usqp=CAI&s",
+            "link_domain": "www.constitutionnet.org",
+            "is_relevant": true,
+            "confidence_score": 90
+          },
+          "question": "Who is the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Succession questions loom after Côte d'Ivoire re-elects ageing president",
+            "link": "https://www.rfi.fr/en/africa/20251102-succession-questions-loom-after-cote-d-ivoire-re-elects-ageing-president-alassane-ouattara",
+            "snippet": "As President Alassane Ouattara prepares for a fourth term after winning last week's election in Côte d'Ivoire in a landslide, the exclusion of...",
+            "date": "Nov 2, 2025",
+            "source": "RFI",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSft1BAHQwpkjl1eKoxRMo3DFqRmmfoLvkxlMgWs9XfXeaRMzRvGrT7mto&usqp=CAI&s",
+            "link_domain": "www.rfi.fr",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Who is the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Côte d'Ivoire’s elections have already been decided: Ouattara will win and democracy will lose",
+            "link": "https://theconversation.com/cote-divoires-elections-have-already-been-decided-ouattara-will-win-and-democracy-will-lose-267798",
+            "snippet": "Even before the ballot, the 25 October presidential polls in Côte d'Ivoire can already be described as a loss to democracy and democratic...",
+            "date": "Oct 22, 2025",
+            "source": "The Conversation",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrXFlbZcAKHdPyJJZPCMNh3yQ2qS4cIunnZkEpGx9p0BG_ZUvPMICc6_o&usqp=CAI&s",
+            "link_domain": "www.theconversation.com",
+            "is_relevant": true,
+            "confidence_score": 80
+          },
+          "question": "Who is the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ivory Coast president appoints brother as vice prime minister",
+            "link": "https://www.reuters.com/world/africa/ivory-coast-president-appoints-brother-vice-prime-minister-2026-01-23/",
+            "snippet": "Ivory Coast President Alassane Ouattara reshuffled his cabinet on Friday, maintaining most senior ministers while appointing his brother,...",
+            "date": "2 weeks ago",
+            "source": "Reuters",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSB5DFSfS2l2gghmK5RHUMyw0xdinHEKFgebIQ6cezST5rx_ofqXQ8Yvo&usqp=CAI&s",
+            "link_domain": "www.reuters.com",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Is Alassane the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show",
+            "link": "https://www.pbs.org/newshour/world/ivory-coast-president-alassane-ouattara-reelected-to-fourth-term-early-results-show",
+            "snippet": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show ... ABIDJAN, Ivory Coast (AP) — Ivory Coast's President...",
+            "date": "Oct 27, 2025",
+            "source": "PBS",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZWzRAo0ece-z78UiQ6MqigT41ukVFipjqbmzqw6O5iOB_eVHIWB48Pc&usqp=CAI&s",
+            "link_domain": "www.pbs.org",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Is Alassane the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Succession questions loom after Côte d'Ivoire re-elects ageing president",
+            "link": "https://www.rfi.fr/en/africa/20251102-succession-questions-loom-after-cote-d-ivoire-re-elects-ageing-president-alassane-ouattara",
+            "snippet": "As President Alassane Ouattara prepares for a fourth term after winning last week's election in Côte d'Ivoire in a landslide, the exclusion...",
+            "date": "Nov 2, 2025",
+            "source": "RFI",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSft1BAHQwpkjl1eKoxRMo3DFqRmmfoLvkxlMgWs9XfXeaRMzRvGrT7mto&usqp=CAI&s",
+            "link_domain": "www.rfi.fr",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Is Alassane the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "What Ouattara's reelection means for Cote d'Ivoire",
+            "link": "https://www.dw.com/en/ivory-coast-president-election-2025-alassane-ouattara-future-of-democracy/video-75029013",
+            "snippet": "Alassane Ouatarra, Cote d'Ivoire's president since 2010, was reelected in a landslide win in October. Though the country has flourished...",
+            "date": "Dec 8, 2025",
+            "source": "DW.com",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKpEyE1ltLHzXRR4x2lKFFqtItIwdo6DGT_N_m6qrPYLmaEzDKe5q8kJE&usqp=CAI&s",
+            "link_domain": "www.dw.com",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Is Alassane the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Côte d’Ivoire: Will Alassane Ouattara Secure a Fourth Term?",
+            "link": "https://africanarguments.org/2025/09/cote-divoire-will-alassane-ouattara-secure-a-fourth-term/",
+            "snippet": "Having emerged as the leader of Côte d'Ivoire in April 2011, following bloody post-electoral violence that cost 3,000 lives, President...",
+            "date": "Sep 12, 2025",
+            "source": "African Arguments",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCdm8O8oz52vNjuWHPXn-JAW3IUWY8Ytm7aaftwQqNJpvyEIRzPBYILt0&usqp=CAI&s",
+            "link_domain": "www.africanarguments.org",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Is Alassane the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Alassane Ouattara wins landslide fourth term as Ivory Coast’s president",
+            "link": "https://www.theguardian.com/world/2025/oct/27/alassane-ouattara-wins-landslide-fourth-term-as-ivory-coasts-president",
+            "snippet": "Alassane Ouattara wins landslide fourth term as Ivory Coast's president ... Alassane Ouattara has been declared the winner of the presidential...",
+            "date": "Oct 27, 2025",
+            "source": "The Guardian",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3iSrNdzp3t9E7jhWP3iOyRik_1l1Ng1Oor77LyWOtLiIczrT1gVDSxHo&usqp=CAI&s",
+            "link_domain": "www.theguardian.com",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Is Alassane the president of Cote d'Ivoire?",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ivory Coast president appoints brother as vice prime minister",
+            "link": "https://www.reuters.com/world/africa/ivory-coast-president-appoints-brother-vice-prime-minister-2026-01-23/",
+            "snippet": "Ivory Coast President Alassane Ouattara reshuffled his cabinet on Friday, maintaining most senior ministers while appointing his brother,...",
+            "date": "2 weeks ago",
+            "source": "Reuters",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSB5DFSfS2l2gghmK5RHUMyw0xdinHEKFgebIQ6cezST5rx_ofqXQ8Yvo&usqp=CAI&s",
+            "link_domain": "www.reuters.com",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Cote d'Ivoire president Alassane",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show",
+            "link": "https://www.pbs.org/newshour/world/ivory-coast-president-alassane-ouattara-reelected-to-fourth-term-early-results-show",
+            "snippet": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show ... ABIDJAN, Ivory Coast (AP) — Ivory Coast's President...",
+            "date": "Oct 27, 2025",
+            "source": "PBS",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZWzRAo0ece-z78UiQ6MqigT41ukVFipjqbmzqw6O5iOB_eVHIWB48Pc&usqp=CAI&s",
+            "link_domain": "www.pbs.org",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Cote d'Ivoire president Alassane",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Succession questions loom after Côte d'Ivoire re-elects ageing president",
+            "link": "https://www.rfi.fr/en/africa/20251102-succession-questions-loom-after-cote-d-ivoire-re-elects-ageing-president-alassane-ouattara",
+            "snippet": "As President Alassane Ouattara prepares for a fourth term after winning last week's election in Côte d'Ivoire in a landslide, the exclusion...",
+            "date": "Nov 2, 2025",
+            "source": "RFI",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSft1BAHQwpkjl1eKoxRMo3DFqRmmfoLvkxlMgWs9XfXeaRMzRvGrT7mto&usqp=CAI&s",
+            "link_domain": "www.rfi.fr",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Cote d'Ivoire president Alassane",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Cote d'Ivoire: Is Ouattara's reelection a setback?",
+            "link": "https://www.dw.com/en/cote-divoire-does-ouattara-re-election-mark-democratic-setback/a-74525683",
+            "snippet": "President Alassane Ouattara won Cote d'Ivoire's presidential election in a landslide, but the opposition says the country is regressing...",
+            "date": "Oct 28, 2025",
+            "source": "DW.com",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLs7qoy9yEHdGg0kYf3-Yn0bQWyyVX0sNKWMOZeTM&usqp=CAI&s",
+            "link_domain": "www.dw.com",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Cote d'Ivoire president Alassane",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Côte d’Ivoire: Will Alassane Ouattara Secure a Fourth Term?",
+            "link": "https://africanarguments.org/2025/09/cote-divoire-will-alassane-ouattara-secure-a-fourth-term/",
+            "snippet": "Having emerged as the leader of Côte d'Ivoire in April 2011, following bloody post-electoral violence that cost 3,000 lives, President...",
+            "date": "Sep 12, 2025",
+            "source": "African Arguments",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCdm8O8oz52vNjuWHPXn-JAW3IUWY8Ytm7aaftwQqNJpvyEIRzPBYILt0&usqp=CAI&s",
+            "link_domain": "www.africanarguments.org",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Cote d'Ivoire president Alassane",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Côte d'Ivoire’s democratic backslide: elections leave even less space for freedom",
+            "link": "https://theconversation.com/cote-divoires-democratic-backslide-elections-leave-even-less-space-for-freedom-269469",
+            "snippet": "Ivorians went to the polls on 25 October 2025 to choose between incumbent president Alassane Ouattara – seeking a fourth five-year term...",
+            "date": "Nov 25, 2025",
+            "source": "The Conversation",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSUQT_SYwmzXx56LwhP3Bhji4V6PTZ91G7tDVel9cU8vCmRAGsBxQ6DHs&usqp=CAI&s",
+            "link_domain": "www.theconversation.com",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Cote d'Ivoire president Alassane",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Côte d’Ivoire election is a missed opportunity to give voters a real democratic choice",
+            "link": "https://www.chathamhouse.org/2025/10/cote-divoire-election-missed-opportunity-give-voters-real-democratic-choice",
+            "snippet": "With the main opposition candidates barred from running, President Alassane Ouattara looks set to secure a controversial fourth term.",
+            "date": "Oct 21, 2025",
+            "source": "Chatham House",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpvLEini8-37743BeHK06zaNMxfKgnUK-Y1OTn409rfeXck_51WqTo-d8&usqp=CAI&s",
+            "link_domain": "www.chathamhouse.org",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Cote d'Ivoire president Alassane",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Cote d'Ivoire: Is Ouattara's reelection a setback?",
+            "link": "https://www.dw.com/en/cote-divoire-does-ouattara-re-election-mark-democratic-setback/a-74525683",
+            "snippet": "President Alassane Ouattara won Cote d'Ivoire's presidential election in a landslide, but the opposition says the country is regressing...",
+            "date": "Oct 28, 2025",
+            "source": "DW.com",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLs7qoy9yEHdGg0kYf3-Yn0bQWyyVX0sNKWMOZeTM&usqp=CAI&s",
+            "link_domain": "www.dw.com",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Current president of Cote d'Ivoire",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ouattara will face four other candidates in Côte d'Ivoire presidential election",
+            "link": "https://www.rfi.fr/en/africa/20250909-ouattara-will-face-four-other-candidates-in-c%C3%B4te-d-ivoire-presidential-election",
+            "snippet": "The constitutional court in Côte d'Ivoire has definitively barred two top opposition leaders, ex-president Laurent Gbagbo and former banker...",
+            "date": "Sep 9, 2025",
+            "source": "RFI",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsUpJoHrMEMhDpeO_jSPn3ArUsEwvR3a37dMQhClhEIGOxCkB4cC-hzGo&usqp=CAI&s",
+            "link_domain": "www.rfi.fr",
+            "is_relevant": true,
+            "confidence_score": 75
+          },
+          "question": "Current president of Cote d'Ivoire",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Alassane Ouattara: Ivory Coast president, 83, says he will run for fourth term",
+            "link": "https://www.bbc.com/news/articles/cwy15j4d8wjo",
+            "snippet": "Ivory Coast President Alassane Ouattara has announced he will run for a fourth term in October's election.",
+            "date": "Jul 29, 2025",
+            "source": "BBC",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJzuqYckMyPTNVR7B_mULvrF6MlkZgdg5rbcFUE-IyXAryJots2zRctKk&usqp=CAI&s",
+            "link_domain": "www.bbc.com",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Current president of Cote d'Ivoire",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Côte d'Ivoire : The beginnings of a political crisis ?",
+            "link": "https://timbuktu-institute.org/index.php/toutes-l-actualites/item/1256-cote-d-ivoire-the-beginnings-of-a-political-crisis",
+            "snippet": "Source : Météo Sahel Juin 2025 Télécharger l'intégralité de la Météo Sahel Alassane Ouattara's \"neither yes nor no\" regarding his 4th...",
+            "date": "Jul 16, 2025",
+            "source": "Timbuktu Institute",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVsYXw_chYI6n7EePYElqZYdO-HeD7m-jCccc85j5IHOYWazaXVMVQfE4&usqp=CAI&s",
+            "link_domain": "www.timbuktu-institute.org",
+            "is_relevant": true,
+            "confidence_score": 80
+          },
+          "question": "Current president of Cote d'Ivoire",
+          "subclaim": "Is_President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Edited images of Ajay Banga circulated amid his recent visit to Pakistan",
+            "link": "https://dfrac.org/en/2026/02/07/edited-images-of-the-world-bank-president-circulated-amid-his-recent-visit-to-pakistan/",
+            "snippet": "These images depict that the President of the World Bank Group, Ajay Banga, allegedly posed in front of a wall featuring the phrase...",
+            "date": "8 hours ago",
+            "source": "DFRAC ORG",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0kIpXz1JR3J6rhs6o2PXlgYxAOHCx_EAYvj9W4D1upbolFtQqzqUKth4&usqp=CAI&s",
+            "link_domain": "www.dfrac.org",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Who was the president of the World Bank?",
+          "subclaim": "Was_President(Alassane, World_Bank) ::: Verify that Alassane was the president of the World Bank."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Message from World Bank Group President Ajay Banga",
+            "link": "https://www.ifc.org/en/insights-reports/annual-report-2024/letter-from-the-world-bank-group-president",
+            "snippet": "Access to electricity is a fundamental human right and foundational to any successful development effort. It will accelerate the digital transformation in...",
+            "date": "Oct 13, 2025",
+            "source": "International Finance Corporation (IFC)",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJuIBKv26bJRplXUVOws-d6MltFYeie5bx7S1wVgRGLaZUT4yR-wOz8Po&usqp=CAI&s",
+            "link_domain": "www.ifc.org",
+            "is_relevant": true,
+            "confidence_score": 95
+          },
+          "question": "Who was the president of the World Bank?",
+          "subclaim": "Was_President(Alassane, World_Bank) ::: Verify that Alassane was the president of the World Bank."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Ajay Banga",
+            "link": "https://www.bloomberg.org/people/ajay-banga/",
+            "snippet": "Ajay Banga is the President of the World Bank Group, beginning his five-year term on June 2, 2023. He stepped into the role with a clear mandate: to...",
+            "date": "Sep 10, 2025",
+            "source": "Bloomberg Philanthropies",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUsUorv_ynxAVdcA8BUIT1nIV-lsvZuWU-E44uDn_F_qQIEYliU-NvnGs&usqp=CAI&s",
+            "link_domain": "www.bloomberg.org",
+            "is_relevant": true,
+            "confidence_score": 100
+          },
+          "question": "Who was the president of the World Bank?",
+          "subclaim": "Was_President(Alassane, World_Bank) ::: Verify that Alassane was the president of the World Bank."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "World Bank President: How “Small AI” Can Help Solve a Big Jobs Crisis",
+            "link": "https://www.wsj.com/video/series/davos-ceobrief-2026/world-bank-president-how-small-ai-can-help-solve-a-big-jobs-crisis/3FADB2C7-7483-4370-AB09-4507807A3FE3?gaa_at=eafs&gaa_n=AWEtsqekCXoAOa2MJFCgqqeLXIPdjb6TP-CjWqUvOu-KnSkQRYvktMuO4meM&gaa_ts=69877e08&gaa_sig=jmWjHWeiM3P0uF1BZuhupvTrF82j7xl3t-yeV0_RqpjG9M6UonRdkamnto3-xHKNjhc8k_mSEO3GL5FaKODt4Q%3D%3D",
+            "snippet": "Sponsored · Bridging the Gap Between Private and Public Markets · Revolutionizing How Investment Firms Operate · Redefining the Edge: Generative...",
+            "date": "2 weeks ago",
+            "source": "The Wall Street Journal",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBXoLjkhpPBCvIqWuFQA4xpYN8gs3OO2KO7Efu4JRuZR3ScPsy6TqbGjM&usqp=CAI&s",
+            "link_domain": "www.wsj.com",
+            "is_relevant": true,
+            "confidence_score": 80
+          },
+          "question": "Who was the president of the World Bank?",
+          "subclaim": "Was_President(Alassane, World_Bank) ::: Verify that Alassane was the president of the World Bank."
+        }
+      },
+      {
+        "json": {
+          "result": {
+            "title": "Alassane Ouattara | Education, Age, Religion, & Facts",
+            "link": "https://www.britannica.com/biography/Alassane-Ouattara",
+            "snippet": "Alassane Ouattara is an Ivoirian economist and politician. He spent many years working in international economics before entering politics.",
+            "date": "1 week ago",
+            "source": "Britannica",
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_QikNvFawJOyDh_Mn_zHnVTd3dBxV4U55ed5vuTwMMXrvgDWMUUkn9BM&usqp=CAI&s",
+            "link_domain": "www.britannica.com",
+            "is_relevant": true,
+            "confidence_score": 40
+          },
+          "question": "Former presidents of the World Bank Alassane",
+          "subclaim": "Was_President(Alassane, World_Bank) ::: Verify that Alassane was the president of the World Bank."
+        }
+      }
+    ],
+    "MOCKUP SERPER": [
+      {
+        "json": {
+          "subclaim": "President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire.",
+          "question": "Who is the president of Cote d'Ivoire?",
+          "news": [
+            {
+              "title": "Ivory Coast president appoints brother as vice prime minister",
+              "link": "https://www.reuters.com/world/africa/ivory-coast-president-appoints-brother-vice-prime-minister-2026-01-23/",
+              "snippet": "Ouattara, 84, a former deputy managing director of the International Monetary Fund, has led the country since 2011 and has said that he intends...",
+              "date": "2 weeks ago",
+              "source": "Reuters",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSB5DFSfS2l2gghmK5RHUMyw0xdinHEKFgebIQ6cezST5rx_ofqXQ8Yvo&usqp=CAI&s"
+            },
+            {
+              "title": "Incumbent President Ouattara declared winner of Ivory Coast election",
+              "link": "https://www.aljazeera.com/news/2025/10/27/incumbent-president-ouattara-declared-winner-of-ivory-coast-election",
+              "snippet": "Incumbent President Ouattara declared winner of Ivory Coast election. In power since 2011, 83-year-old Alassane Ouattara secures fourth term in...",
+              "date": "Oct 27, 2025",
+              "source": "Al Jazeera",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSCLQ1556BQUMA89SaMBpi8EKjcZl03DTMza0NsRaDaG2hWxnYKtnYGLc&usqp=CAI&s"
+            },
+            {
+              "title": "Political Tension in Côte d’Ivoire",
+              "link": "https://www.cfr.org/articles/political-tension-cote-divoire",
+              "snippet": "In March of this year, The Economist magazine ran a story headlined “The Success of Ivory Coast is Africa's Best-Kept Secret.",
+              "date": "May 28, 2025",
+              "source": "Council on Foreign Relations",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8mVVc44IsG6uY1whPy58pLjmKsd-0vcbJH-r7isogXMvaNV-Gbs-R47g&usqp=CAI&s"
+            },
+            {
+              "title": "What Ouattara's reelection means for Cote d'Ivoire",
+              "link": "https://www.dw.com/en/ivory-coast-president-election-2025-alassane-ouattara-future-of-democracy/video-75029013",
+              "snippet": "Alassane Ouatarra, Cote d'Ivoire's president since 2010, was reelected in a landslide win in October. Though the country has flourished...",
+              "date": "Dec 8, 2025",
+              "source": "DW.com",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKpEyE1ltLHzXRR4x2lKFFqtItIwdo6DGT_N_m6qrPYLmaEzDKe5q8kJE&usqp=CAI&s"
+            },
+            {
+              "title": "Alassane Ouattara tightens control in Côte d'Ivoire as he seeks fourth term",
+              "link": "https://www.lemonde.fr/en/le-monde-africa/article/2025/10/25/alassane-ouattara-tightens-control-in-cote-d-ivoire-as-he-seeks-fourth-term_6746768_124.html",
+              "snippet": "The two main opposition leaders are barred from Saturday's presidential vote, as a 44000-strong security operation is deployed nationwide.",
+              "date": "Oct 25, 2025",
+              "source": "Le Monde.fr",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPfeI8__UIgomdGvmYe9HmvuJO7B1AAcD4ZE8KV6-fclcx63rcHl4bxtM&usqp=CAI&s"
+            },
+            {
+              "title": "Succession questions loom after Côte d'Ivoire re-elects ageing president",
+              "link": "https://www.rfi.fr/en/africa/20251102-succession-questions-loom-after-cote-d-ivoire-re-elects-ageing-president-alassane-ouattara",
+              "snippet": "As President Alassane Ouattara prepares for a fourth term after winning last week's election in Côte d'Ivoire in a landslide, the exclusion of...",
+              "date": "Nov 2, 2025",
+              "source": "RFI",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSft1BAHQwpkjl1eKoxRMo3DFqRmmfoLvkxlMgWs9XfXeaRMzRvGrT7mto&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast's president will seek a fourth term after removing term limits from constitution",
+              "link": "http://constitutionnet.org/news/ivory-coasts-president-will-seek-fourth-term-after-removing-term-limits-constitution",
+              "snippet": "Ouattara's candidacy is contested after he changed the constitution in 2016 to remove the presidential term limit. The 83-year-old president...",
+              "date": "Jul 29, 2025",
+              "source": "ConstitutionNet",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTO5zfAvgbWnLLDZVvQoK42lf1OhraxiFxygKhnuzrrV5X72pcq-P0YNdg&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show",
+              "link": "https://www.pbs.org/newshour/world/ivory-coast-president-alassane-ouattara-reelected-to-fourth-term-early-results-show",
+              "snippet": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show ... ABIDJAN, Ivory Coast (AP) — Ivory Coast's President...",
+              "date": "Oct 27, 2025",
+              "source": "PBS",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZWzRAo0ece-z78UiQ6MqigT41ukVFipjqbmzqw6O5iOB_eVHIWB48Pc&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire election is a missed opportunity to give voters a real democratic choice",
+              "link": "https://www.chathamhouse.org/2025/10/cote-divoire-election-missed-opportunity-give-voters-real-democratic-choice",
+              "snippet": "With the main opposition candidates barred from running, President Alassane Ouattara looks set to secure a controversial fourth term.",
+              "date": "Oct 21, 2025",
+              "source": "Chatham House",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpvLEini8-37743BeHK06zaNMxfKgnUK-Y1OTn409rfeXck_51WqTo-d8&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast President Secures 4th Term in Election Without Top Opponents",
+              "link": "https://www.nytimes.com/2025/10/27/world/africa/ivory-coast-president-election-ouattara-wins.html",
+              "snippet": "Ivory Coast President Secures 4th Term in Election Without Top Opponents. President Alassane Ouattara won 89.77 percent of the vote, but critics...",
+              "date": "Oct 27, 2025",
+              "source": "The New York Times",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcReSE7qa05niNyOehwC-4IDoXAKg0BkH_HlSDVbqLHdk0IGFtNh8NOLPSM&usqp=CAI&s"
+            }
+          ]
+        }
+      },
+      {
+        "json": {
+          "subclaim": "President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire.",
+          "question": "Is Alassane the president of Cote d'Ivoire?",
+          "news": [
+            {
+              "title": "Alassane Ouattara | Education, Age, Religion, & Facts",
+              "link": "https://www.britannica.com/biography/Alassane-Ouattara",
+              "snippet": "Alassane Ouattara (born January 1, 1942, Dimbokro, Côte d'Ivoire, French West Africa) is an Ivoirian economist and politician who was elected president of Côte...",
+              "date": "1 week ago",
+              "source": "Britannica",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_QikNvFawJOyDh_Mn_zHnVTd3dBxV4U55ed5vuTwMMXrvgDWMUUkn9BM&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show",
+              "link": "https://www.pbs.org/newshour/world/ivory-coast-president-alassane-ouattara-reelected-to-fourth-term-early-results-show",
+              "snippet": "Ivory Coast President Alassane Ouattara reelected to fourth term, early results show ... ABIDJAN, Ivory Coast (AP) — Ivory Coast's President...",
+              "date": "Oct 27, 2025",
+              "source": "PBS",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_ZWzRAo0ece-z78UiQ6MqigT41ukVFipjqbmzqw6O5iOB_eVHIWB48Pc&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast president appoints brother as vice prime minister",
+              "link": "https://www.reuters.com/world/africa/ivory-coast-president-appoints-brother-vice-prime-minister-2026-01-23/",
+              "snippet": "Ivory Coast President Alassane Ouattara reshuffled his cabinet on Friday, maintaining most senior ministers while appointing his brother,...",
+              "date": "2 weeks ago",
+              "source": "Reuters",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSB5DFSfS2l2gghmK5RHUMyw0xdinHEKFgebIQ6cezST5rx_ofqXQ8Yvo&usqp=CAI&s"
+            },
+            {
+              "title": "Succession questions loom after Côte d'Ivoire re-elects ageing president",
+              "link": "https://www.rfi.fr/en/africa/20251102-succession-questions-loom-after-cote-d-ivoire-re-elects-ageing-president-alassane-ouattara",
+              "snippet": "As President Alassane Ouattara prepares for a fourth term after winning last week's election in Côte d'Ivoire in a landslide, the exclusion...",
+              "date": "Nov 2, 2025",
+              "source": "RFI",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSft1BAHQwpkjl1eKoxRMo3DFqRmmfoLvkxlMgWs9XfXeaRMzRvGrT7mto&usqp=CAI&s"
+            },
+            {
+              "title": "What Ouattara's reelection means for Cote d'Ivoire",
+              "link": "https://www.dw.com/en/ivory-coast-president-election-2025-alassane-ouattara-future-of-democracy/video-75029013",
+              "snippet": "Alassane Ouatarra, Cote d'Ivoire's president since 2010, was reelected in a landslide win in October. Though the country has flourished...",
+              "date": "Dec 8, 2025",
+              "source": "DW.com",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKpEyE1ltLHzXRR4x2lKFFqtItIwdo6DGT_N_m6qrPYLmaEzDKe5q8kJE&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d'Ivoire’s elections have already been decided: Ouattara will win and democracy will lose",
+              "link": "https://theconversation.com/cote-divoires-elections-have-already-been-decided-ouattara-will-win-and-democracy-will-lose-267798",
+              "snippet": "Regardless of the legal reasoning and outcomes, President Alassane Ouattara's fourth-term bid is a loss for democracy in Côte d'Ivoire.",
+              "date": "Oct 22, 2025",
+              "source": "The Conversation",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRaAzQiE_llrmmwvpS5KYINpausC-tbG_aFKh_MFs&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast’s president says will seek fourth term in office",
+              "link": "https://www.aljazeera.com/news/2025/7/29/ivory-coasts-president-says-will-seek-fourth-term-in-office",
+              "snippet": "Alassane Ouattara, 83, announced the plan after changing the constitution to remove presidential term limits.",
+              "date": "Jul 29, 2025",
+              "source": "Al Jazeera",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuYJqqG1hCH1brplXGBzGPlcl2j411DymjJM0LFgQ0tLXD3mjxa96h-lc&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire: Will Alassane Ouattara Secure a Fourth Term?",
+              "link": "https://africanarguments.org/2025/09/cote-divoire-will-alassane-ouattara-secure-a-fourth-term/",
+              "snippet": "Having emerged as the leader of Côte d'Ivoire in April 2011, following bloody post-electoral violence that cost 3,000 lives, President...",
+              "date": "Sep 12, 2025",
+              "source": "African Arguments",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCdm8O8oz52vNjuWHPXn-JAW3IUWY8Ytm7aaftwQqNJpvyEIRzPBYILt0&usqp=CAI&s"
+            },
+            {
+              "title": "In Côte d'Ivoire, Alassane Ouattara wins a fourth term, marking the twilight of his rule",
+              "link": "https://www.lemonde.fr/en/le-monde-africa/article/2025/10/28/in-cote-d-ivoire-alassane-ouattara-wins-a-fourth-term-marking-the-twilight-of-his-rule_6746835_124.html",
+              "snippet": "With more than 89% of the vote, Ivorian President Alassane Ouattara secured a fourth term on October 27, according to results announced by...",
+              "date": "Oct 28, 2025",
+              "source": "Le Monde.fr",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpPNe9CUenfyjhZOLyWwqKfu67UmrcFSBeALlzYDw300rGgSOPfJw4LEM&usqp=CAI&s"
+            },
+            {
+              "title": "Alassane Ouattara wins landslide fourth term as Ivory Coast’s president",
+              "link": "https://www.theguardian.com/world/2025/oct/27/alassane-ouattara-wins-landslide-fourth-term-as-ivory-coasts-president",
+              "snippet": "Alassane Ouattara wins landslide fourth term as Ivory Coast's president ... Alassane Ouattara has been declared the winner of the presidential...",
+              "date": "Oct 27, 2025",
+              "source": "The Guardian",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3iSrNdzp3t9E7jhWP3iOyRik_1l1Ng1Oor77LyWOtLiIczrT1gVDSxHo&usqp=CAI&s"
+            }
+          ]
+        }
+      },
+      {
+        "json": {
+          "subclaim": "President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire.",
+          "question": "Current president of Cote d'Ivoire Alassane",
+          "news": [
+            {
+              "title": "Political Tension in Côte d’Ivoire",
+              "link": "https://www.cfr.org/articles/political-tension-cote-divoire",
+              "snippet": "Economic successes do not obviate the need for political transition.",
+              "date": "May 28, 2025",
+              "source": "Council on Foreign Relations",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8mVVc44IsG6uY1whPy58pLjmKsd-0vcbJH-r7isogXMvaNV-Gbs-R47g&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast’s president says will seek fourth term in office",
+              "link": "https://www.aljazeera.com/news/2025/7/29/ivory-coasts-president-says-will-seek-fourth-term-in-office",
+              "snippet": "Alassane Ouattara, 83, announced the plan after changing the constitution to remove presidential term limits.",
+              "date": "Jul 29, 2025",
+              "source": "Al Jazeera",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuYJqqG1hCH1brplXGBzGPlcl2j411DymjJM0LFgQ0tLXD3mjxa96h-lc&usqp=CAI&s"
+            },
+            {
+              "title": "Cote d'Ivoire: Is Ouattara's reelection a setback?",
+              "link": "https://www.dw.com/en/cote-divoire-does-ouattara-re-election-mark-democratic-setback/a-74525683",
+              "snippet": "President Alassane Ouattara won Cote d'Ivoire's presidential election in a landslide, but the opposition says the country is regressing...",
+              "date": "Oct 28, 2025",
+              "source": "dw.com",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLs7qoy9yEHdGg0kYf3-Yn0bQWyyVX0sNKWMOZeTM&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast election: President Alassane Ouattara wins fourth term after main rivals barred",
+              "link": "https://www.bbc.com/news/articles/cddrzl9nmm2o",
+              "snippet": "Ivory Coast's President Alassane Ouattara has secured a fourth term following an election in which two of his biggest challengers were...",
+              "date": "Oct 27, 2025",
+              "source": "BBC",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpxmzt8ne7s5NFR4e9fsXUbxexVkCkVAWfSsevMKZIvVwFDeiz0sHCops&usqp=CAI&s"
+            },
+            {
+              "title": "Ouattara will face four other candidates in Côte d'Ivoire presidential election",
+              "link": "https://www.rfi.fr/en/africa/20250909-ouattara-will-face-four-other-candidates-in-c%C3%B4te-d-ivoire-presidential-election",
+              "snippet": "The constitutional court in Côte d'Ivoire has definitively barred two top opposition leaders, ex-president Laurent Gbagbo and former banker...",
+              "date": "Sep 9, 2025",
+              "source": "RFI",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsUpJoHrMEMhDpeO_jSPn3ArUsEwvR3a37dMQhClhEIGOxCkB4cC-hzGo&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d'Ivoire’s elections have already been decided: Ouattara will win and democracy will lose",
+              "link": "https://theconversation.com/cote-divoires-elections-have-already-been-decided-ouattara-will-win-and-democracy-will-lose-267798",
+              "snippet": "Regardless of the legal reasoning and outcomes, President Alassane Ouattara's fourth-term bid is a loss for democracy in Côte d'Ivoire.",
+              "date": "Oct 22, 2025",
+              "source": "The Conversation",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRaAzQiE_llrmmwvpS5KYINpausC-tbG_aFKh_MFs&usqp=CAI&s"
+            },
+            {
+              "title": "Ivory Coast’s future after France’s exit",
+              "link": "https://www.gisreportsonline.com/r/ivory-coast-france/",
+              "snippet": "Ivory Coast's economic boom and the end of French military presence contrast with political uncertainties surrounding the upcoming...",
+              "date": "Aug 1, 2025",
+              "source": "GIS Reports",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_zaAK6rStIqnG_lOG-_OZy4s5DZrdU56wWxVPqhEhUvW8RIyRxfop9mg&usqp=CAI&s"
+            },
+            {
+              "title": "Alassane Ouattara wins Ivory Coast presidential election, according to provisional results",
+              "link": "https://www.france24.com/en/africa/20251027-alassane-ouattara-wins-ivory-coast-presidential-election-according-to-provisional-results",
+              "snippet": "Ivory Coast's President Alassane Ouattara secured a fourth term on Monday, according to the provisional results of the Independent Electoral...",
+              "date": "Oct 27, 2025",
+              "source": "France 24",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjQuzTv1P77PN9ej3KNlWJ6LKLeCQsmKGu0jIBiZfL1Sh3J4yAi5Vn_iU&usqp=CAI&s"
+            },
+            {
+              "title": "The Côte d’Ivoire elections: Political farce or new chapter of uncertainty?",
+              "link": "https://democracyinafrica.org/the-cote-divoire-elections-political-farce-or-new-chapter-of-uncertainty/",
+              "snippet": "On 25 October 2025, Ivorians will be called to vote in a presidential election with unique characteristics.",
+              "date": "Oct 20, 2025",
+              "source": "Democracy in Africa",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSROYrgRBG3f5M963DofDPWdrBo5e1ZKMr6HfiWWmF4xT4DVB1due9xKO8&usqp=CAI&s"
+            },
+            {
+              "title": "Tensions mount as Alassane Ouattara seeks fourth term in Ivory Coast vote",
+              "link": "https://www.theguardian.com/world/2025/oct/20/tensions-mount-alassane-ouattara-seeks-fourth-term-ivory-coast-vote-president",
+              "snippet": "Protests have been banned and opposition figures sidelined as 83-year-old president ignores calls to step down.",
+              "date": "Oct 20, 2025",
+              "source": "The Guardian",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5RJlNBGa2SDjWmt9w41hQc8nDQRtg6wxgTZK4GDxg666t8xapgPWT0oM&usqp=CAI&s"
+            }
+          ]
+        }
+      },
+      {
+        "json": {
+          "subclaim": "President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire.",
+          "question": "Cote d'Ivoire president Alassane verification",
+          "news": [
+            {
+              "title": "Video does not depict military coup in Ivory Coast",
+              "link": "https://factcheckhub.com/video-does-not-depict-military-coup-in-ivory-coast/",
+              "snippet": "A video showing a building engulfed in fire has surfaced online with a claim that it is the result of a purported military coup in Ivory Coast.",
+              "date": "May 23, 2025",
+              "source": "FactCheckHub",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9BPsvY_Fa2yUvz1slGyQg-5l_OxhdRJkoVByYKibKYokWXLPmInL562Y&usqp=CAI&s"
+            },
+            {
+              "title": "Aucune preuve concernant une démission du Président ivoirien, Alassane Ouattara - Dubawa",
+              "link": "https://dubawa.org/aucune-preuve-concernant-une-demission-du-president-ivoirien-alassane-ouattara/",
+              "snippet": "FAIT: Dans une vidéo TikTok (archivée ici) publiée sur le compte presse.02 le 26 décembre 2025, il est indiqué : « Urgence absolue !",
+              "date": "1 month ago",
+              "source": "Dubawa",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjsGKLpneHzagI37caFR3W-SqgPVIpMZNL_T5g043ZA9YDoP07uBhMp8E&usqp=CAI&s"
+            },
+            {
+              "title": "Fact Check: Months-old Ivory Coast shopping mall fire clip falsely portrayed as May 'coup'",
+              "link": "https://www.reuters.com/fact-check/months-old-ivory-coast-shopping-mall-fire-clip-falsely-portrayed-may-coup-2025-05-29/",
+              "snippet": "A video of an Ivorian shopping centre engulfed in flames in February was shared on social media on May 21 with the baseless narrative that a...",
+              "date": "May 29, 2025",
+              "source": "Reuters",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8eIF9zepxKlpod00AOq2arBnF4ntjOZIZ0zm--GjMRlF6d8J3DfmyQvs&usqp=CAI&s"
+            },
+            {
+              "title": "Fact-checking : la Côte d'Ivoire avant la présidentielle",
+              "link": "https://www.dw.com/fr/fact-checking-cote-d-ivoire-election-presidentielle-2025/video-74490821",
+              "snippet": "A l'approche des élections en Côte d'Ivoire, la désinformation en ligne alimente les tensions — propageant des rumeurs sur des mandats...",
+              "date": "Oct 24, 2025",
+              "source": "DW.com",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTu3HXwZrw3REPWLLmaxG6tcxbT-oI-yovF_drMIhDMFsQf2DY8Sxv1HWA&usqp=CAI&s"
+            },
+            {
+              "title": "En Côte d’Ivoire, la « Françafrique » sévit encore",
+              "link": "https://www.monde-diplomatique.fr/2025/10/PIGEAUD/68818",
+              "snippet": "Alors que son influence est dénoncée ou rejetée dans nombre de pays africains francophones, la France conserve des liens étroits avec la...",
+              "date": "Oct 25, 2025",
+              "source": "Le Monde diplomatique",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2C1NPErWrwkvLK5Fx3DCRvn_aa1xSxa6caKEMsLnmqIe6SBO6c4YrdiU&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire : ce qu’il faut savoir sur les cinq candidats en lice pour la présidentielle d’octobre 2025",
+              "link": "https://africacheck.org/fr/fact-checks/fiches-dinformation/cote-ivoire-presidentielle-2025-cinq-candidats-en-lice",
+              "snippet": "Alassane Ouattara, Adjoua Henriette Lagou, Sénin Ahoua Jacob Don-Mello, Jean-Louis Billon et Ehivet Simone Gbagbo seront en course pour la...",
+              "date": "Sep 10, 2025",
+              "source": "Africa Check",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8lnns0gaTdRS7dET4ZlZWsx0NLiYD1hxRMiBrz660dXsmhTc8Bm5OAdo&usqp=CAI&s"
+            },
+            {
+              "title": "Candidature du Chef de l’Etat Alassane Ouattara à la présidentielle de 2025, une vidéo de 2020 entretient le",
+              "link": "https://dubawa.org/candidature-du-chef-de-letat-alassane-ouattara-a-la-presidentielle-de-2025-une-video-de-2020-entretient-le-flou/",
+              "snippet": "FAIT : Une vidéo d'environ vingt secondes, diffusée sur TikTok par « portedafrique0 », montre le Président ivoirien, Alassane Ouattara,...",
+              "date": "Aug 7, 2025",
+              "source": "Dubawa",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRq3zOsYr1BDMefnnPp85TzhRHRJiSnpB16KHIQeLYWeqodELwh0A25OM&usqp=CAI&s"
+            },
+            {
+              "title": "En Côte d’Ivoire, Ouattara vers un 4e mandat dans une démocratie sous contrôle",
+              "link": "https://www.lefigaro.fr/international/en-cote-d-ivoire-ouattara-vers-un-4e-mandat-dans-une-democratie-sous-controle-20251024",
+              "snippet": "DÉCRYPTAGE - La vitrine économique de l'Afrique de l'Ouest s'apprête à reconduire un président dans une élection où il n'a croisé aucun...",
+              "date": "Oct 24, 2025",
+              "source": "Le Figaro",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjcaQoFIegrhngz1W4IiEZQE7NvpFPGsoBknigSkCWhEYsY26ln-otrBI&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire-AIP/ Revue de presse/ La confirmation de la réélection d’Alassane Ouattara par le Conseil constitutionnel à la Une de la presse nationale - AIP - Agence Ivoirienne de Presse",
+              "link": "https://www.aip.ci/274929/cote-divoire-aip-revue-de-presse-la-confirmation-de-la-reelection-dalassane-ouattara-par-le-conseil-constitutionnel-a-la-une-de-la-presse-nationale/",
+              "snippet": "Abidjan, 5 nov 2025 (AIP) – La proclamation par le Conseil constitutionnel de la victoire d'Alassane Ouattara à la présidentielle du 25...",
+              "date": "Nov 5, 2025",
+              "source": "AIP - Agence Ivoirienne de Presse",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR84NeLsYZMgAWazY3w4PyePm2oWwrd5wVQFyWOZnWKp7aLrknM-6CuJhsa&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire : une vidéo virale sur TikTok annonçant la mort d’Alassane Ouattara est fausse",
+              "link": "https://www.africaradio.com/actualite-110696-cote-d-ivoire-une-video-virale-sur-tiktok-annoncant-la-mort-d-alassane-ouattara-est-fausse",
+              "snippet": "Une vidéo diffusée sur TikTok annonçant le décès du président ivoirien Alassane Ouattara est un faux. Le chef de l'État est vivant et...",
+              "date": "Aug 25, 2025",
+              "source": "africaradio.com",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3famMy-2WUWE-EdZUzRNwFmRzqUZojx-jkVKFrdi9MxiVZqgw4eIgy-I&usqp=CAI&s"
+            }
+          ]
+        }
+      },
+      {
+        "json": {
+          "subclaim": "Was_President(Alassane, Banque_Mondiale) ::: Verify that Alassane was president of the Banque Mondiale.",
+          "question": "Was Alassane president of the Banque Mondiale?",
+          "news": []
+        }
+      },
+      {
+        "json": {
+          "subclaim": "Was_President(Alassane, Banque_Mondiale) ::: Verify that Alassane was president of the Banque Mondiale.",
+          "question": "Who was president of the Banque Mondiale?",
+          "news": [
+            {
+              "title": "Le vice-président de la Banque mondiale pour l'Afrique de l’Ouest et du centre, Ousmane Diagana, en visite au Bénin, Burkina Faso et Niger",
+              "link": "https://www.banquemondiale.org/fr/news/press-release/2025/09/26/world-bank-vice-president-for-western-and-central-africa-ousmane-diagana-visits-benin-burkina-faso-and-niger",
+              "snippet": "AVIS AUX MEDIAS. WASHIGNTON, 26 septembre 2025 - Ousmane Diagana, vice-président de la Banque mondiale pour l'Afrique de l'Ouest et du centre,...",
+              "date": "Sep 26, 2025",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-3aoa6xGHYa2R4K8dUfFYlZPpZj_5GBtA7x2PzpgIlGQ5TiYSkZ6Fol4&usqp=CAI&s"
+            },
+            {
+              "title": "World Bank and IMF: Aissata Tall Sall elected First Vice President of…",
+              "link": "https://www.seneweb.com/en/news/Diplomatie/banque-mondiale-et-fmi-aissata-tall-sall-elue-premiere-vice-presidente-de_n_470911.html",
+              "snippet": "On the occasion of the opening of the Annual Meetings of the International Monetary Fund (IMF) and the World Bank, which will take place...",
+              "date": "Oct 13, 2025",
+              "source": "Seneweb",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTiUz7ERkMaBLf-lbKs7Uvd5Im0pAegGoSTqL4BbDQpCfE53tw9ERv5jU&usqp=CAI&s"
+            },
+            {
+              "title": "Ndiamé Diop est nommé Vice-président de la Banque mondiale pour l’Afrique orientale et australe",
+              "link": "https://www.banquemondiale.org/fr/news/press-release/2025/05/01/ndiam-diop-appointed-as-world-bank-vice-president-for-afe-eastern-and-southern-africa",
+              "snippet": "Diop sera basé à Nairobi, au Kenya. En tant que vice-président, il supervisera un portefeuille régional actif de près de 400 projets d'une...",
+              "date": "May 1, 2025",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSG_WzWIDDLzWamu08iJ0rrgaFu3Doksjf_iJJyLdhMfHFcYhU_wGT-fMQ&usqp=CAI&s"
+            },
+            {
+              "title": "Le président de la Banque mondiale salue Akinwumi Adesina pour sa vision, son dynamisme et son leadership transformateur",
+              "link": "https://www.afdb.org/fr/news-and-events/le-president-de-la-banque-mondiale-salue-akinwumi-adesina-pour-sa-vision-son-dynamisme-et-son-leadership-transformateur-85042",
+              "snippet": "Adesina a dressé un bilan positif de ses dix années à la tête de la première institution de financement du développement en Afrique, tout en...",
+              "date": "May 30, 2025",
+              "source": "African Development Bank Group",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7-XWyYbu0nB7-CAlnJVgXy3um99OR9sPqLP4eEAMcpEJyYs5KBm4A1HM&usqp=CAI&s"
+            },
+            {
+              "title": "Le Président Abdourahamane Tiani reçoit le vice-président de la Banque mondiale : un partenariat réaffirmé au service du développement du Niger",
+              "link": "https://nigerdiaspora.net/politique/le-president-abdourahamane-tiani-recoit-le-vice-president-de-la-banque-mondiale-un-partenariat-reaffirme-au-service-du-developpement-du-niger",
+              "snippet": "Le Président de la République, Chef de l'État, le Général d'Armée Abdourahamane Tiani, a accordé une audience à une délégation de haut...",
+              "date": "Oct 4, 2025",
+              "source": "Nigerdiaspora",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjWJAR3x4RJZ1cV4dajOSB9cD99KTXxIw7LvIxy1Z9u4liQRtpPrj6GVw&usqp=CAI&s"
+            },
+            {
+              "title": "Ajay Banga",
+              "link": "https://www.banquemondiale.org/ext/fr/who-we-are/leadership/ajay-banga",
+              "snippet": "Ajay Banga, 14e président du Groupe de la Banque mondiale, dirige les efforts déployés par l'institution pour mettre fin à l'extrême pauvreté et favoriser...",
+              "date": "Oct 17, 2024",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnQdwEpM42t2ZaRjgD10KbspSNLeOivEsNHjTsbGE&usqp=CAI&s"
+            },
+            {
+              "title": "Niger : Ousmane Diagana, vice-président de la Banque mondiale pour l’Afrique de l’Ouest et du Centre, attendu à Niamey pour une visite de travail stratégique",
+              "link": "https://nigerdiaspora.net/politique/niger-ousmane-diagana-vice-president-de-la-banque-mondiale-pour-lafrique-de-louest-et-du-centre-attendu-a-niamey-pour-une-visite-de-travail-strategique",
+              "snippet": "Niger : Ousmane Diagana, vice-président de la Banque mondiale pour l'Afrique de l'Ouest et du Centre, attendu à Niamey pour une visite de...",
+              "date": "Oct 2, 2025",
+              "source": "Nigerdiaspora",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdtasNRobc3-6lwhvgIhErNuYRzpvm3FCuKeIwlRaQzTAj9FDTXPrl4ts&usqp=CAI&s"
+            },
+            {
+              "title": "La Banque mondiale nomme Susana Cordeiro Guerra vice-présidente pour l'Amérique latine et les Caraïbes",
+              "link": "https://www.banquemondiale.org/fr/news/press-release/2025/09/15/world-bank-appoints-susana-cordeiro-guerra-as-vice-president-for-latin-america-and-the-caribbean",
+              "snippet": "Cordeiro Guerra, la première femme latino-américaine à occuper ce poste, apporte une solide expérience en matière de leadership dans les...",
+              "date": "Sep 15, 2025",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkmU6oCpRoy_1OjLZmhAmZMNfKuas6OPIb53WHfjebPmcFwrJkKh4cml0&usqp=CAI&s"
+            },
+            {
+              "title": "Sélection du Président du Groupe de la Banque mondiale",
+              "link": "https://www.banquemondiale.org/fr/news/press-release/2023/02/22/selection-of-the-president-of-the-world-bank-group",
+              "snippet": "Les candidatures devront être déposées entre le jeudi 23 février 2023 à 9h00 heure normale de l'Est (EST) et le mercredi 29 mars 2023 à 18h00...",
+              "date": "Feb 22, 2023",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-3aoa6xGHYa2R4K8dUfFYlZPpZj_5GBtA7x2PzpgIlGQ5TiYSkZ6Fol4&usqp=CAI&s"
+            },
+            {
+              "title": "Propos du Président du Groupe de la Banque mondiale, M. Ajay Banga, au Sommet africain de l’énergie « Mission 300 »",
+              "link": "https://www.banquemondiale.org/fr/news/speech/2025/01/28/remarks-by-world-bank-group-president-ajay-banga-at-the-mission-300-africa-energy-summit",
+              "snippet": "Nous avons besoin de votre esprit d'innovation, de votre efficacité et de votre capacité de déploiement à grande échelle. Pour faciliter vos...",
+              "date": "Jan 28, 2025",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-3aoa6xGHYa2R4K8dUfFYlZPpZj_5GBtA7x2PzpgIlGQ5TiYSkZ6Fol4&usqp=CAI&s"
+            }
+          ]
+        }
+      },
+      {
+        "json": {
+          "subclaim": "Was_President(Alassane, Banque_Mondiale) ::: Verify that Alassane was president of the Banque Mondiale.",
+          "question": "Alassane president Banque Mondiale",
+          "news": [
+            {
+              "title": "Alassane Ouattara s'entretient avec le Premier Ministre du Rwanda, la Directrice des Opérations de la Banque Mondiale et l’Envoyée Spéciale du Président d’Afrique du Sud",
+              "link": "https://news.abidjan.net/articles/745693/alassane-ouattara-sentretient-avec-le-premier-ministre-du-rwanda-la-directrice-des-operations-de-la-banque-mondiale-et-lenvoyee-speciale-du-president-dafrique-du-sud",
+              "snippet": "Le Président de la République, S.E.M. Alassane OUATTARA, s'est entretenu, ce mardi 9 décembre 2025, à sa Résidence, avec le Premier Ministre...",
+              "date": "Dec 10, 2025",
+              "source": "Abidjan.net - Bien + qu'un portail",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTK30Jn7LL7V0MmEuq-QAL5eMns7sBVsTTPTJf49APOwUMzL1svl2ohqFk&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d'Ivoire : Au lendemain de son investiture, Ouattara séduit ses alliés internationaux, un élan diplomatique qui conforte sa légitimité et son ambition",
+              "link": "https://www.koaci.com/article/2025/12/09/cote-divoire/politique/cote-divoire-au-lendemain-de-son-investiture-ouattara-seduit-ses-allies-internationaux-un-elan-diplomatique-qui-conforte-sa-legitimite-et-son-ambition_192673.html",
+              "snippet": "Alassane Ouattara et Anna Bjerde ce mardi à AbidjanLe Président ivoirien a reçu plusieurs délégations de haut niveau, té.",
+              "date": "Dec 9, 2025",
+              "source": "koaci",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuLK3YvSPSru1-yDE2rc90N8WeGiqhATYMSV6vWslvLO3lH5D3TJlneLE&usqp=CAI&s"
+            },
+            {
+              "title": "Les dirigeants africains s'unissent pour une reconstitution ambitieuse des ressources de l’Association internationale de développement (IDA-20)",
+              "link": "https://www.banquemondiale.org/fr/news/press-release/2021/07/05/african-leaders-unite-to-support-an-ambitious-international-development-association-ida20-replenishment",
+              "snippet": "Son Excellence Monsieur Alassane Ouattara, président de la République de Côte d'Ivoire, et le Groupe de la Banque mondiale accueilleront un...",
+              "date": "Jul 5, 2021",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLx14do0q0adeZ2W9jOruWLj3ZyhdOnKv0pNqBfB_cjtgd0Uc7reQXXMU&usqp=CAI&s"
+            },
+            {
+              "title": "Ouattara salue les 100 milliards de dollars pour l'Afrique au sommet avec la Banque mondiale",
+              "link": "https://www.voaafrique.com/a/ouattara-salue-les-100-milliards-de-dollars-pour-l-afrique-au-sommet-avec-la-banque-mondiale/5967010.html",
+              "snippet": "S'exprimant à Abidjan à l'occasion du sommet entre l'Afrique et la Banque mondiale sur l'aide financière au continent, le président ivoirien...",
+              "date": "Jul 15, 2021",
+              "source": "VOA Afrique",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgfKd1kekN53YwXp_lW-Glq3lfKPnjEovGe1yW1Vn_tMp8jxcZefk_Ifs&usqp=CAI&s"
+            },
+            {
+              "title": "Avant-première du film documentaire",
+              "link": "https://news.abidjan.net/articles/745069/avant-premiere-du-film-documentaire-alassane-ouattara-gouverneur-et-homme-detatallocution-de-monsieur-tiemoko-meyliet-kone-vice-president-de-la-republique",
+              "snippet": "Abidjan, le 8 octobre 2025Excellence Monsieur Alassane Ouattara, Président de la République de Côte d'Ivoire,Madame Dominique Ouattara,...",
+              "date": "Oct 9, 2025",
+              "source": "Abidjan.net",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8M5LktfRk3eCTjTRB_TZgYTWP8F4HicIe0_mNhAPyqmp-Po6oSLs3LQo&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire: le président Alassane Ouattara investi pour un quatrième mandat axé sur la \"transmission générationnelle\"",
+              "link": "https://information.tv5monde.com/afrique/video/cote-divoire-le-president-alassane-ouattara-investi-pour-un-quatrieme-mandat-axe-sur-la-transmission-generationnelle-2800642",
+              "snippet": "Main droite levée et main gauche posée sur la Constitution, Alassane Ouattara a prêté serment pour la quatrième fois en tant que président...",
+              "date": "Dec 9, 2025",
+              "source": "tv5monde",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM8TdZYVRy7mdidtVdMliwPJZAEbRKm0yrx9D5LFPfBwx0rtkUlxbaG7VY&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d'Ivoire| Palais présidentiel d'Abidjan : le Président Alassane Ouattara investi pour un quatrième mandat",
+              "link": "https://afrimag.net/cote-divoire-palais-presidentiel-dabidjan-le-president-alassane-ouattara-investi-pour-un-quatrieme-mandat/",
+              "snippet": "Le Président Alassane Ouattara a été investi lundi pour un quatrième mandat à la tête de la Côte d'Ivoire, lors d'une cérémonie au palais...",
+              "date": "Dec 8, 2025",
+              "source": "Afrimag",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsSG1ZUd_vMF2b6GlFvqp7b-gFIEvkgRuBAF3j2s_dlEAXCOO035Ms3e0&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire-Gabon : à Bouaké, Oligui Nguema en quête d’appui chez Ouattara",
+              "link": "https://www.jeuneafrique.com/1713025/politique/cote-divoire-gabon-a-bouake-oligui-nguema-en-quete-dappui-chez-ouattara/",
+              "snippet": "Le 7 août, le président gabonais et tombeur d'Ali Bongo Ondimba a pris part à l'anniversaire de l'indépendance de la Côte d'Ivoire.",
+              "date": "Aug 9, 2025",
+              "source": "Jeune Afrique",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOI6CgRGvyNCUELNYjz1MEkTcS-tQulBuVduuhASzfCT2fSOLF2RHqXkg&usqp=CAI&s"
+            },
+            {
+              "title": "Le Cerdi fête ses 40 ans avec Alassane Ouattara, président de la Côte d'Ivoire",
+              "link": "https://www.lamontagne.fr/clermont-ferrand-63000/economie/le-cerdi-fete-ses-40-ans-avec-alassane-ouattara-president-de-la-cote-d-ivoire_12087607/",
+              "snippet": "Le Cerdi (Université d'Auvergne/CNRS) célèbre ses quarante ans, les 29 et 30 septembre, à l'Ecole universitaire de management de...",
+              "date": "Sep 26, 2016",
+              "source": "La Montagne",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpys1qdfMFm9QCdPKSWnBOeP3JUhUjI5vP1Go_bM_9kyS1bjynUdMykyM&usqp=CAI&s"
+            },
+            {
+              "title": "France : Le Vice-Président de la République a eu des entretiens avec les Dirigeants du FIDA, de l’UNICEF, de TV5 Monde et de la Banque Mondiale, à Paris",
+              "link": "https://news.abidjan.net/articles/740519/france-le-vice-president-de-la-republique-a-eu-des-entretiens-avec-les-dirigeants-du-fida-de-lunicef-de-tv5-monde-et-de-la-banque-mondiale-a-paris",
+              "snippet": "Le Vice-Président de la République, M. Tiémoko Meyliet KONÉ, représentant le Chef de l'Etat, S.E.M. Alassane OUATTARA, à la 4e édition du...",
+              "date": "Mar 29, 2025",
+              "source": "Abidjan.net - Bien + qu'un portail",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiqGFOtjFC06nItmcRvKH0r6Y7zBwfsDaP1YjbQsbMXm_OA0V1Af1w97g&usqp=CAI&s"
+            }
+          ]
+        }
+      },
+      {
+        "json": {
+          "subclaim": "Was_President(Alassane, Banque_Mondiale) ::: Verify that Alassane was president of the Banque Mondiale.",
+          "question": "Banque Mondiale past presidents Alassane",
+          "news": [
+            {
+              "title": "Alassane Ouattara s'entretient avec le Premier Ministre du Rwanda, la Directrice des Opérations de la Banque Mondiale et l’Envoyée Spéciale du Président d’Afrique du Sud",
+              "link": "https://news.abidjan.net/articles/745693/alassane-ouattara-sentretient-avec-le-premier-ministre-du-rwanda-la-directrice-des-operations-de-la-banque-mondiale-et-lenvoyee-speciale-du-president-dafrique-du-sud",
+              "snippet": "Le Président de la République, S.E.M. Alassane OUATTARA, s'est entretenu, ce mardi 9 décembre 2025, à sa Résidence, avec le Premier Ministre...",
+              "date": "Dec 10, 2025",
+              "source": "Abidjan.net - Bien + qu'un portail",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTK30Jn7LL7V0MmEuq-QAL5eMns7sBVsTTPTJf49APOwUMzL1svl2ohqFk&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d'Ivoire : Au lendemain de son investiture, Ouattara séduit ses alliés internationaux, un élan diplomatique qui conforte sa légitimité et son ambition",
+              "link": "https://www.koaci.com/article/2025/12/09/cote-divoire/politique/cote-divoire-au-lendemain-de-son-investiture-ouattara-seduit-ses-allies-internationaux-un-elan-diplomatique-qui-conforte-sa-legitimite-et-son-ambition_192673.html",
+              "snippet": "Alassane Ouattara et Anna Bjerde ce mardi à AbidjanLe Président ivoirien a reçu plusieurs délégations de haut niveau, té.",
+              "date": "Dec 9, 2025",
+              "source": "koaci",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRuLK3YvSPSru1-yDE2rc90N8WeGiqhATYMSV6vWslvLO3lH5D3TJlneLE&usqp=CAI&s"
+            },
+            {
+              "title": "Cérémonie d’ouverture officielle - Discours d’ouverture de M. Akinwumi A. Adesina Président du Groupe de la Banque africaine de développement et président de ses Conseils d’adm",
+              "link": "https://www.afdb.org/fr/news-and-events/speeches/ceremonie-douverture-officielle-discours-douverture-de-m-akinwumi-adesina-president-du-groupe-de-la-banque-africaine-de-developpement-et-president-de-ses-conseils-dadm-84037",
+              "snippet": "Excellence Monsieur Alassane Ouattara, président de la République de Côte d'Ivoire, Excellence Monsieur Azali Assoumani, président de...",
+              "date": "May 27, 2025",
+              "source": "African Development Bank Group",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0JJ2HanLSbXikrI3vbKQd-FZUxxLvHD3paJjfjiJ8iZoHBqKcWgbs1Vg&usqp=CAI&s"
+            },
+            {
+              "title": "Les dirigeants africains s'unissent pour une reconstitution ambitieuse des ressources de l’Association internationale de développement (IDA-20)",
+              "link": "https://www.banquemondiale.org/fr/news/press-release/2021/07/05/african-leaders-unite-to-support-an-ambitious-international-development-association-ida20-replenishment",
+              "snippet": "Son Excellence Monsieur Alassane Ouattara, président de la République de Côte d'Ivoire, et le Groupe de la Banque mondiale accueilleront un...",
+              "date": "Jul 5, 2021",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLx14do0q0adeZ2W9jOruWLj3ZyhdOnKv0pNqBfB_cjtgd0Uc7reQXXMU&usqp=CAI&s"
+            },
+            {
+              "title": "Ouattara salue les 100 milliards de dollars pour l'Afrique au sommet avec la Banque mondiale",
+              "link": "https://www.voaafrique.com/a/ouattara-salue-les-100-milliards-de-dollars-pour-l-afrique-au-sommet-avec-la-banque-mondiale/5967010.html",
+              "snippet": "S'exprimant à Abidjan à l'occasion du sommet entre l'Afrique et la Banque mondiale sur l'aide financière au continent, le président ivoirien...",
+              "date": "Jul 15, 2021",
+              "source": "VOA Afrique",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgfKd1kekN53YwXp_lW-Glq3lfKPnjEovGe1yW1Vn_tMp8jxcZefk_Ifs&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d'Ivoire : Après un entretien avec Ouattara, Diagana : « J'ai réaffirmé l'engagement de la Banque Mondiale à accompagner le pays dans la mise en œuvre de la création d'emplois",
+              "link": "https://www.koaci.com/article/2025/07/02/cote-divoire/economie/cote-divoire-apres-un-entretien-avec-ouattara-diagana-jai-reaffirme-lengagement-de-la-banque-mondiale-a-accompagner-le-pays-dans-la-mise-en-oeuvre-de-la-creation-demplois_188216.html",
+              "snippet": "Diagana et Ouattara mardi à Abidjan (DR) Le Président de la République, Alassane Ouattara, a échangé , le mardi 1er.",
+              "date": "Jul 2, 2025",
+              "source": "koaci",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcO7GQqKGeW_8kpT4qeXDNXNjW_Y6Hdr-ydFhV9ILqgxm2ePRoFOaS8-4&usqp=CAI&s"
+            },
+            {
+              "title": "L'IDA en Afrique : Sommet des chefs d’État",
+              "link": "https://www.banquemondiale.org/fr/events/2021/07/08/ida-for-africa-high-level-meeting-of-heads-of-state",
+              "snippet": "Cette réunion de haut niveau des chefs d'État africains – accueillie par le président ivoirien, Alassane Ouattara – soulignera l'importance...",
+              "date": "Jul 15, 2021",
+              "source": "Banque mondiale",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLx14do0q0adeZ2W9jOruWLj3ZyhdOnKv0pNqBfB_cjtgd0Uc7reQXXMU&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire: le président Alassane Ouattara investi pour un quatrième mandat axé sur la \"transmission générationnelle\"",
+              "link": "https://information.tv5monde.com/afrique/video/cote-divoire-le-president-alassane-ouattara-investi-pour-un-quatrieme-mandat-axe-sur-la-transmission-generationnelle-2800642",
+              "snippet": "Main droite levée et main gauche posée sur la Constitution, Alassane Ouattara a prêté serment pour la quatrième fois en tant que président...",
+              "date": "Dec 9, 2025",
+              "source": "tv5monde",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM8TdZYVRy7mdidtVdMliwPJZAEbRKm0yrx9D5LFPfBwx0rtkUlxbaG7VY&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d’Ivoire-Gabon : à Bouaké, Oligui Nguema en quête d’appui chez Ouattara",
+              "link": "https://www.jeuneafrique.com/1713025/politique/cote-divoire-gabon-a-bouake-oligui-nguema-en-quete-dappui-chez-ouattara/",
+              "snippet": "Le 7 août, le président gabonais et tombeur d'Ali Bongo Ondimba a pris part à l'anniversaire de l'indépendance de la Côte d'Ivoire.",
+              "date": "Aug 9, 2025",
+              "source": "Jeune Afrique",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOI6CgRGvyNCUELNYjz1MEkTcS-tQulBuVduuhASzfCT2fSOLF2RHqXkg&usqp=CAI&s"
+            },
+            {
+              "title": "Côte d'Ivoire| Palais présidentiel d'Abidjan : le Président Alassane Ouattara investi pour un quatrième mandat",
+              "link": "https://afrimag.net/cote-divoire-palais-presidentiel-dabidjan-le-president-alassane-ouattara-investi-pour-un-quatrieme-mandat/",
+              "snippet": "Le Président Alassane Ouattara a été investi lundi pour un quatrième mandat à la tête de la Côte d'Ivoire, lors d'une cérémonie au palais...",
+              "date": "Dec 8, 2025",
+              "source": "Afrimag",
+              "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsSG1ZUd_vMF2b6GlFvqp7b-gFIEvkgRuBAF3j2s_dlEAXCOO035Ms3e0&usqp=CAI&s"
+            }
+          ]
+        }
+      }
+    ],
+    "Question Generation MOCKUP": [
+      {
+        "json": {
+          "output": {
+            "subclaim_with_questions": [
+              {
+                "subclaim": "President(Alassane, Cote_d'Ivoire) ::: Verify that Alassane is the president of Cote d'Ivoire.",
+                "questions": [
+                  "Who is the president of Cote d'Ivoire?",
+                  "Is Alassane the president of Cote d'Ivoire?",
+                  "Current president of Cote d'Ivoire Alassane",
+                  "Cote d'Ivoire president Alassane verification"
+                ]
+              },
+              {
+                "subclaim": "Was_President(Alassane, Banque_Mondiale) ::: Verify that Alassane was president of the Banque Mondiale.",
+                "questions": [
+                  "Was Alassane president of the Banque Mondiale?",
+                  "Who was president of the Banque Mondiale?",
+                  "Alassane president Banque Mondiale",
+                  "Banque Mondiale past presidents Alassane"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Claim Decomposition Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Claim Classification Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLMG1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claim Decomposition Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLMG2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claim Classification Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Filter - Verifiable Subclaim",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter - No Verifiable Subclaim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Workflow Input Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Length Validation": {
+      "main": [
+        [
+          {
+            "node": "Input Type Validation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        []
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Questions Generation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Questions Generation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Online Search Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out3": {
+      "main": [
+        [
+          {
+            "node": "Add Normalised Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Normalised Domain": {
+      "main": [
+        [
+          {
+            "node": "Credibility Check Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Domain suffix": {
+      "main": [
+        [
+          {
+            "node": "Credibility Check Loop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check MediaBias DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check MediaBias DB": {
+      "main": [
+        [
+          {
+            "node": "Credibility Check Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Empty Items": {
+      "main": [
+        [
+          {
+            "node": "Has Items ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Items ?": {
+      "main": [
+        [
+          {
+            "node": "Credibility Check Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper Search": {
+      "main": [
+        [
+          {
+            "node": "Online Search Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Items ?1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter No Relevance Items1": {
+      "main": [
+        [
+          {
+            "node": "Split Out4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out4": {
+      "main": [
+        [
+          {
+            "node": "Has Items ?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MOCKUP RELEVANCE AGENT": {
+      "main": [
+        []
+      ]
+    },
+    "MOCKUP SERPER": {
+      "main": [
+        []
+      ]
+    },
+    "Question Generation MOCKUP": {
+      "main": [
+        []
+      ]
+    },
+    "Online Search Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Online Search Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Online Search Loop": {
+      "main": [
+        [
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Serper Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Credibility Check Loop": {
+      "main": [
+        [
+          {
+            "node": "Filter Empty Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Domain suffix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Relevance Check Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Credibility Check Format Output": {
+      "main": [
+        [
+          {
+            "node": "Relevance Check Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Data": {
+      "main": [
+        [
+          {
+            "node": "Input Length Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relevance Check Agent": {
+      "main": [
+        [
+          {
+            "node": "Filter No Relevance Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Questions Generation Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Classification Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Decomposition Agent": {
+      "main": [
+        [
+          {
+            "node": "Claim Classification Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Type Validation Agent": {
+      "main": [
+        [
+          {
+            "node": "Claim Decomposition Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter - Verifiable Subclaim": {
+      "main": [
+        [
+          {
+            "node": "Has Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter - No Verifiable Subclaim": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLMG": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Input Type Validation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLMG3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Questions Generation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLMG4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Relevance Check Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Filter Empty Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "32b9a032-52ca-4ba3-8181-579a480ee93e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "685799f4eece8e6cb169dd79c504ab78fc80b1ed1991caee437d87b3a5559887"
+  },
+  "id": "CYjCxF2GSErUKARv",
+  "tags": []
+}

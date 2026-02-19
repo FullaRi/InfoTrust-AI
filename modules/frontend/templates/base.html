@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr" data-theme="light" data-lt-installed="true">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfoTrust AI - Détecteur de Fake News</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.min.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+    {% block extra_alpine %}{% endblock %}
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ── NAVBAR ── -->
+    <div class="z1 navbar bg-white/70 backdrop-blur-lg border-b border-white/80 sticky top-0 z-50 px-6">
+        <div class="navbar-start gap-2.5">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="w-15">
+        </div>
+        <div class="navbar-end gap-1">
+            <a class="btn btn-ghost btn-sm text-base-content/60" href="{{ url_for('core.home') }}">Accueil</a>
+            <a class="btn btn-ghost btn-sm text-base-content/60" href="{{ url_for('core.home') }}">À propos</a>
+            <a class="btn btn-ghost btn-sm text-base-content/60" href="{{ url_for('core.home') }}">Contact</a>
+        </div>
+    </div>
+
+{% block content %}
+
+{% endblock %}
+
+<!-- FOOTER -->
+<footer class="z1 footer footer-center bg-white/50 backdrop-blur border-t border-base-200 p-6 text-base-content/30 text-xs font-medium">
+    <p>InfoTrust AI © 2026</p>
+</footer>
+
+
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('settings', {
+            apiUrl: "",
+            appUrl: "",
+        })
+    })
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/date-fns@latest/cdn.min.js"></script>
+<script src="{{ url_for('static', filename='js/core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+
+{% block extra_js %}
+
+{% endblock %}
+
+</body>
+
+</html>
