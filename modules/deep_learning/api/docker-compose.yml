@@ -1,0 +1,9 @@
+services:
+  deep_learning_api:
+    build: .
+    container_name: infotrustai_deep_learning_api
+    ports:
+      - "${APP_PORT}:5000"
+    env_file:
+      - ./.env
+    restart: unless-stopped
