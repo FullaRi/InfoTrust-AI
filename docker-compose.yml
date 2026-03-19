@@ -1,0 +1,58 @@
+services:
+  deep_learning_api:
+    build: ./modules/deep_learning/api
+    container_name: infotrustai_deep_learning_api
+    ports:
+      - "8088:5000"
+    env_file:
+      - ./modules/deep_learning/api/.env
+    restart: unless-stopped
+    networks:
+      - infotrustai_net
+
+  n8n_web_investigation_api:
+    image: docker.n8n.io/n8nio/n8n
+    ports:
+      - "5678:5678"
+    env_file:
+      - ./modules/web_investigation/n8n/.env
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./modules/web_investigation/n8n/local-files:/files
+    restart: unless-stopped
+    networks:
+      - infotrustai_net
+
+  core_api:
+    build: ./modules/core
+    container_name: infotrustai_core_api
+    ports:
+      - "8089:5000"
+    env_file:
+      - ./modules/core/.env
+    restart: unless-stopped
+    depends_on:
+      - deep_learning_api
+      - n8n_web_investigation_api
+    networks:
+      - infotrustai_net
+
+  frontend:
+    build: ./modules/frontend
+    container_name: infotrustai_frontend
+    ports:
+      - "8000:5000"
+    env_file:
+      - ./modules/frontend/.env
+    restart: unless-stopped
+    depends_on:
+      - core_api
+    networks:
+      - infotrustai_net
+
+networks:
+  infotrustai_net:
+    driver: bridge
+
+volumes:
+  n8n_data:

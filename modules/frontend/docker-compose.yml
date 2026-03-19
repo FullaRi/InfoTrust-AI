@@ -1,9 +1,0 @@
-services:
-  web:
-    build: .
-    container_name: infotrustai_web
-    ports:
-      - "${APP_PORT}:5000"
-    env_file:
-      - ./.env
-    restart: unless-stopped

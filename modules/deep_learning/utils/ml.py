@@ -32,7 +32,7 @@ def extract_keywords(explanation, threshold=0.05, top_k=5):
 def generate_explanation(prediction, keywords):
     words = ", ".join(keywords)
 
-    if prediction == "REAL":
-        return f"This news as REAL because the text contains informative terms such as ( {words} ), which are commonly found in verified news articles."
+    if prediction.lower() == "real":
+        return f"This news as Real because the text contains informative terms such as ( {words} ), which are commonly found in verified news articles."
     else:
-        return f"This news as FAKE because certain expressions such as ( {words} ) resemble patterns often found in misleading or unreliable content."
+        return f"This news as Fake because certain expressions such as ( {words} ) resemble patterns often found in misleading or unreliable content."

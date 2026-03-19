@@ -27,7 +27,7 @@ def home():
 @bp.route('/predict', methods=['POST'])
 def predict():
     if not request.is_json:
-        return {"error": "Impossible de traiter la requête"}, 400
+        return {"message": "Impossible de traiter la requête"}, 400
 
     try:
         schema = schemas.PredictionSchema(many=False)
@@ -36,7 +36,7 @@ def predict():
         return {"message": "invalid form"}, 400
     except Exception as e:
         logger.exception("API / prediction error : ")
-        return {"error": "Impossible de traiter la requête"}, 500
+        return {"message": "Impossible de traiter la requête"}, 500
 
 
     # 'prediction_full' : [[{'label': 'Fake', 'score': 0.02}, {'label': 'Real', 'score': 0.98}]]
@@ -55,11 +55,11 @@ def predict():
 
     word_attributions = cls_explainer(validated_data['user_input'])
     keywords = ml.extract_keywords(word_attributions)
-    explanation_message = ml.generate_explanation(prediction[0]['label'], keywords)
+    explanation_message = ml.generate_explanation(prediction[0]['label'].lower(), keywords)
 
     return {
         "user_input": validated_data['user_input'],
-        "verdict": prediction[0]['label'],
+        "verdict": prediction[0]['label'].lower(),
         "score": round(prediction[0]['score'] * 100, 2),
         "explanation": {
             "xai_word_attributions": word_attributions,

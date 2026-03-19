@@ -1,3 +1,5 @@
+ARG MODEL_PATH="./infotrustai_model"
+
 FROM python:3.12
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -13,6 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project
 COPY . .
+RUN mkdir -p /app/model
+COPY ${MODEL_PATH} /app/model
 
 # Expose port
 EXPOSE 5000
