@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 def main():
     # Vérification du dossier et du fichier de configuration
-
-
     #
+    print("DEEP LEARNING API URL ", settings.DEEP_LEARNING_API_URL)
+    print("AI AGENT API URL ", settings.AI_AGENT_API_URL)
     try:
         flask_app = create_app()
         flask_app.run(port=int(settings.APP_PORT), host="0.0.0.0")

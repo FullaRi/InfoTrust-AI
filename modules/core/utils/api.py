@@ -58,8 +58,11 @@ class DeepLearningServiceApi:
                     ]
                 ]
             },
-            "score": 99.99,
-            "user_input": "preonal vaccines",
+            "prediction_score": 1.0,
+            "credibility_score": 1.0,
+            "status": "CREDIBLE",
+            "status_description": "Verified Style Markers : nasa, recently, admitted, in, leaked",
+            "user_input": "NASA recently admitted in a leaked internal memo that the 1969 moon landing was filmed in a high-security studio in Nevada because the radiation belts were too deadly for astronauts to survive the journey through deep space.",
             "verdict": "real"
         }
         """
@@ -67,8 +70,11 @@ class DeepLearningServiceApi:
 
         return {
             "explanation": deep_learning_data["explanation"],
-            "score": deep_learning_data["score"],
-            "verdict": deep_learning_data["verdict"]
+            "credibility_score": deep_learning_data["credibility_score"],
+            "prediction_score": deep_learning_data["prediction_score"],
+            "verdict": deep_learning_data["verdict"],
+            "status": deep_learning_data["status"],
+            "status_description": deep_learning_data["status_description"]
         }
 
 class AiAgentServiceApi:
@@ -77,22 +83,15 @@ class AiAgentServiceApi:
     def predict(user_input: str):
         payload = {'user_input': user_input}
 
-        # try:
+
         response = requests.post(
             url=settings.AI_AGENT_API_URL,
             json=payload,
             timeout=(30 * 60)
         )
         response.raise_for_status()
-        # except requests.exceptions.HTTPError as errh:
-        #     logger.exception(errh)
-        #     raise Exception("API Error")
-        # except requests.exceptions.Timeout as errt:
-        #     logger.exception(errt)
-        #     raise Exception("API Error")
-        # except requests.exceptions.RequestException as err:
-        #     logger.exception(err)
-        #     raise Exception("API Error")
+
+
 
         """
         Exemple of response :
@@ -124,15 +123,15 @@ class AiAgentServiceApi:
         ----
         
          {
-        "output": {
-            "final_decision": "fake_insufficient_evidence",
-            "credibility_score": 0,
-            "final_justification": "The claim is classified as fake_insufficient_evidence because no supporting evidence was provided for the subclaim. The provided input contained null values for the subclaim, question, and source link, and explicitly stated \"None\" for evidence extraction. Without any verifiable information or sources, the claim cannot be supported.",
-            "sources_for_investigation": [],
-            "subclaim_results": [
-            ]
+            "output": {
+                "final_decision": "fake_insufficient_evidence",
+                "credibility_score": 0,
+                "final_justification": "The claim is classified as fake_insufficient_evidence because no supporting evidence was provided for the subclaim. The provided input contained null values for the subclaim, question, and source link, and explicitly stated \"None\" for evidence extraction. Without any verifiable information or sources, the claim cannot be supported.",
+                "sources_for_investigation": [],
+                "subclaim_results": [
+                ]
+            }
         }
-}
         """
         agent_data = response.json()
 

@@ -11,8 +11,13 @@ def home():
 
 
 @bp.route('/report')
-def product():
+def report():
     return render_template('report.html')
+
+
+@bp.route('/product')
+def product():
+    return render_template('product.html')
 
 
 @bp.route('/contact-request', methods=['POST'])

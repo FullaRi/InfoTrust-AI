@@ -6,6 +6,10 @@ model_path = settings.MODEL_PATH
 mapping = {"LABEL_0": "Fake", "LABEL_1": "Real"}
 
 
+def calculate_credibility_score(verdict, prediction_score):
+    return round(prediction_score, 2) if verdict == "real" else (round(1 - prediction_score, 2))
+
+
 def get_tools():
     classifier = pipeline(
         "text-classification",
@@ -29,10 +33,26 @@ def extract_keywords(explanation, threshold=0.05, top_k=5):
     return words[:top_k]
 
 
-def generate_explanation(prediction, keywords):
+def generate_analyst(prediction, keywords, credibility_score):
     words = ", ".join(keywords)
 
-    if prediction.lower() == "real":
-        return f"This news as Real because the text contains informative terms such as ( {words} ), which are commonly found in verified news articles."
+    if credibility_score > 0.80:
+        status = "CREDIBLE"
+        explanation = (f"The text structure is consistent and professional. "
+                f"The neutral tone detected is a strong indicator of verified reporting.")
+
+        status_desc = f"Verified Style Markers : {words}"
+    elif 0.40 <= credibility_score <= 0.80:
+        status = "MIXED"
+        explanation = (f"This text blends factual reporting with a subjective or emotional style. "
+                f"There is a risk that the information is biased. ")
+
+        status_desc = f"Terms causing hesitation : {words}"
     else:
-        return f"This news as Fake because certain expressions such as ( {words} ) resemble patterns often found in misleading or unreliable content."
+        status = "NOT CREDIBLE"
+        explanation = (f"The system detected a linguistic signature typical of misinformation, "
+                f"often designed to trigger a strong emotional reaction ")
+
+        status_desc = f"Suspicious Keywords Identified : {words}"
+
+    return explanation, status, status_desc

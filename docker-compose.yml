@@ -1,11 +1,11 @@
 services:
   deep_learning_api:
-    build: ./modules/deep_learning/api
+    build: ./modules/deep_learning
     container_name: infotrustai_deep_learning_api
     ports:
       - "8088:5000"
     env_file:
-      - ./modules/deep_learning/api/.env
+      - ./modules/deep_learning/.env
     restart: unless-stopped
     networks:
       - infotrustai_net

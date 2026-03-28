@@ -15,11 +15,9 @@ from utils.api import DeepLearningServiceApi, AiAgentServiceApi
 logger = logging.getLogger(__name__)
 
 
-
 @bp.route('/')
 def home():
     return {"service infotrustai core": "online"}, 200
-
 
 @bp.route('/fake-news-detection', methods=['POST'])
 def fake_news_detection():
@@ -70,12 +68,12 @@ def fake_news_detection():
 
             if 'application/json' in content_type:
                 error_msg = errh.response.json()
-                if error_msg['error']:
+                if error_msg:
                     # INVALID_INPUT - LLM_ERROR -
-                    error_type = error_msg['error']['type']
+                    error_type = error_msg['type']
 
                     if error_type == 'INVALID_INPUT':
-                        return {"message": "The provided text does not appear to be a news article. Please submit a valid news or informational content. (Max length: 500 characters, Min length: 10 characters)"}, 400
+                        return {"message": "The provided text does not appear to be a news article. Please submit a valid news or informational content. (Max length: 400 characters, Min length: 10 characters)"}, 400
 
             return {"message": "The request could not be processed. Please try again later."}, 500
         except requests.exceptions.Timeout:
@@ -91,28 +89,34 @@ def fake_news_detection():
         'credibility_score': "",
         'explanation': "",
         'sources_for_investigation': [],
-        'status': ""
+        'status': "",
+        'status_description': "",
     }
 
     if detection_type == ml.DETECTION_TYPE_DEEP_LEARNING:
         api_response['detection_type'] = detection_type
         api_response['final_decision'] = deep_learning_data['verdict']
-        api_response['credibility_score'] = ml.get_deep_learning_credibility_score(deep_learning_data)
+        api_response['credibility_score'] = deep_learning_data['credibility_score'] * 100
         api_response['explanation'] = deep_learning_data['explanation']['message']
         api_response['sources_for_investigation'] = []
-        api_response['status'] = ""
+        api_response['status'] = deep_learning_data['status'] # CREDIBLE - MIXED - NOT CREDIBLE
+        api_response['status_description'] = deep_learning_data['status_description']
 
     elif detection_type == ml.DETECTION_TYPE_AI_AGENT:
+
+        status_data = ml.get_investigation_web_status(ai_agent_data)
+
         api_response['detection_type'] = detection_type
         api_response['final_decision'] = ai_agent_data['final_decision']
         api_response['credibility_score'] = 100 *  ai_agent_data['credibility_score']
         api_response['explanation'] = ai_agent_data['final_justification']
         api_response['sources_for_investigation'] = ai_agent_data['sources_for_investigation']
-        api_response['status'] = ""
+        api_response['status'] = status_data[0] #  HIGHLY CREDIBLE - MODERATELY CREDIBLE - LOW CREDIBILITY - VERY LIKELY FAKE - UNVERIFIABLE
+        api_response['status_description'] = status_data[1]
 
     elif detection_type == ml.DETECTION_TYPE_AI_AGENT__DEEP_LEARNING:
         unified_credibility_score = ml.calculate_unified_credibility_score(deep_learning_data, ai_agent_data)
-        analysis_data = ml.generate_analysis(deep_learning_data, ai_agent_data, unified_credibility_score)
+        analysis_data = ml.generate_core_analysis(deep_learning_data, ai_agent_data, unified_credibility_score)
         final_decision = ai_agent_data['final_decision']
 
         if final_decision == 'insufficient_evidence':
@@ -134,7 +138,8 @@ def fake_news_detection():
         api_response['credibility_score'] = unified_credibility_score
         api_response['explanation'] = human_explanation
         api_response['sources_for_investigation'] = ai_agent_data["sources_for_investigation"]
-        api_response['status'] = analysis_data["status"]
+        api_response['status'] = analysis_data["status"] #  VERIFIED - MIXED - WARNING - FALSE - UNCERTAIN
+        api_response['status_description'] = analysis_data["status_description"]
 
     else:
         return {"message": "Invalid detection type."}, 400
@@ -446,7 +451,7 @@ def test():
         return {"error": "Impossible de traiter la requête"}, 500
 
     unified_credibility_score = ml.calculate_unified_credibility_score(deep_learning_data, agent_data)
-    analysis_data = ml.generate_analysis(deep_learning_data, agent_data, unified_credibility_score)
+    analysis_data = ml.generate_core_analysis(deep_learning_data, agent_data, unified_credibility_score)
 
     try:
         human_explanation = ml.generate_human_explanation(unified_credibility_score, deep_learning_data, agent_data, analysis_data)

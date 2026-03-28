@@ -64,22 +64,25 @@ const _callDownloadFileApi = async (path, data = {}) => {
 
 const apiClient = {
     account: {
-        async getMe() {
-            const resp = await _callApi('/users/me/', 'get')
-            return resp.data
-        },
-        async updatePassword(data) {
-            const resp = await _callApi('/users/me-set-password/', 'post', data)
-            return resp.data
-        },
-        async logout() {
-            const resp = await _callApi('/auth/logout/', 'get')
-            return resp.data
-        }
+        // async getMe() {
+        //     const resp = await _callApi('/users/me/', 'get')
+        //     return resp.data
+        // },
+        // async updatePassword(data) {
+        //     const resp = await _callApi('/users/me-set-password/', 'post', data)
+        //     return resp.data
+        // },
+        // async logout() {
+        //     const resp = await _callApi('/auth/logout/', 'get')
+        //     return resp.data
+        // }
     },
-    stats: {
-        async default () {
-            const resp = await _callApi('/stats/', 'get')
+    prediction: {
+        async fakeNews (detectionType, userInput) {
+            const resp = await _callApi('/fake-news-detection', 'post', {
+                detection_type: detectionType,
+                user_input: userInput
+            })
             return resp.data
         }
     }

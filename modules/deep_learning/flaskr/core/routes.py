@@ -53,17 +53,25 @@ def predict():
         truncation=True
     )
 
+    verdict = prediction[0]['label'].lower()
+    prediction_score = round(prediction[0]['score'], 2)
+    credibility_score = ml.calculate_credibility_score(verdict, prediction_score)
+
     word_attributions = cls_explainer(validated_data['user_input'])
     keywords = ml.extract_keywords(word_attributions)
-    explanation_message = ml.generate_explanation(prediction[0]['label'].lower(), keywords)
+
+    explanation, status, status_desc  = ml.generate_analyst(verdict, keywords, credibility_score)
 
     return {
         "user_input": validated_data['user_input'],
         "verdict": prediction[0]['label'].lower(),
-        "score": round(prediction[0]['score'] * 100, 2),
+        "prediction_score": prediction_score,
+        "credibility_score": credibility_score,
+        "status": status,
+        "status_description": status_desc,
         "explanation": {
             "xai_word_attributions": word_attributions,
             "keywords": keywords,
-            "message": explanation_message
+            "message": explanation
         }
     }

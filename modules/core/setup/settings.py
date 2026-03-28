@@ -8,6 +8,7 @@ DEBUG = True if os.getenv("DEBUG") == "True" else False
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 APP_PORT = os.getenv("APP_PORT")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS")
 
 AGENT_WEIGHT_SCORE = 0.8
 DEEP_LEARNING_WEIGHT_SCORE = 0.2
