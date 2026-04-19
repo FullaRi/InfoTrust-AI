@@ -76,7 +76,7 @@ git clone https://gitlab.com/uqac1674503/infotrustai.git
 > Vous n'avez pas besoin de N8N si vous souhaitez utiliser le mode **analyse sémantique uniquement**. Il est nécessaires uniquement dans le mode **vérification factuelle** et **analyse complète**
 
 
-[Mise en place de n8n](./modules/web_investigation/n8n/README.md)
+[Mise en place de n8n](./modules/web_investigation/README.md)
 
 ### 5. Mise en place de InfoTrust AI
 
