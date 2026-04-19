@@ -55,6 +55,9 @@ Use a voting logic:
 - Include only the URLs that were actually used to support the final decision.
 - Add them to the field: "sources_for_investigation".
 
+5. Explanation 
+- Explain the reasoning based on the evidence first, then implicitly lead to the conclusion without starting the explanation with “The claim is real/fake”.
+
 ## Credibility Score
 
 Provide a credibility score between 0 and 1:

@@ -1,49 +1,42 @@
 services:
   deep_learning_api:
-    build: ./modules/deep_learning
-    container_name: infotrustai_deep_learning_api
+    image: toublouprosper/infotrustai-deeplearning:latest
     ports:
-      - "8088:5000"
-    env_file:
-      - ./modules/deep_learning/.env
+      - "127.0.0.1:8088:5000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
     restart: unless-stopped
     networks:
       - infotrustai_net
-
-  n8n_web_investigation_api:
-    image: docker.n8n.io/n8nio/n8n
-    ports:
-      - "5678:5678"
-    env_file:
-      - ./modules/web_investigation/n8n/.env
-    volumes:
-      - n8n_data:/home/node/.n8n
-      - ./modules/web_investigation/n8n/local-files:/files
-    restart: unless-stopped
-    networks:
-      - infotrustai_net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   core_api:
-    build: ./modules/core
-    container_name: infotrustai_core_api
+    image: toublouprosper/infotrustai-core:latest
     ports:
       - "8089:5000"
-    env_file:
-      - ./modules/core/.env
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - AI_AGENT_API_URL=${AI_AGENT_API_URL}
+      - DEEP_LEARNING_API_URL=http://deep_learning_api:5000/predict
     restart: unless-stopped
     depends_on:
-      - deep_learning_api
-      - n8n_web_investigation_api
+      deep_learning_api:
+        condition: service_started
     networks:
       - infotrustai_net
 
   frontend:
-    build: ./modules/frontend
-    container_name: infotrustai_frontend
+    image: toublouprosper/infotrustai-frontend
     ports:
       - "8000:5000"
-    env_file:
-      - ./modules/frontend/.env
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - API_URL=${CORE_API_URL}
     restart: unless-stopped
     depends_on:
       - core_api
@@ -53,6 +46,3 @@ services:
 networks:
   infotrustai_net:
     driver: bridge
-
-volumes:
-  n8n_data:

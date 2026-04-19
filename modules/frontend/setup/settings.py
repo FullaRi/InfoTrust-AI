@@ -6,8 +6,9 @@ load_dotenv(override=False)
 
 DEBUG = True if os.getenv("DEBUG") == "True" else False
 
-CONTACT_REQUEST_DST_EMAIL = os.getenv("CONTACT_REQUEST_DST_EMAIL")
 SECRET_KEY = os.getenv("SECRET_KEY")
+CONTACT_REQUEST_DST_EMAIL = os.getenv("CONTACT_REQUEST_DST_EMAIL")
+API_URL = os.getenv("API_URL")
 
 MAIL_SERVER = os.getenv("MAIL_SERVER")
 MAIL_PORT = os.getenv("MAIL_PORT")

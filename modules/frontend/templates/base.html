@@ -94,7 +94,7 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.store('settings', {
-            apiUrl: "http://127.0.0.1:8089",
+            apiUrl: "{{ api_url }}",
             appUrl: "",
             analystDataKey: "InfoTrustAI__analystData"
         })

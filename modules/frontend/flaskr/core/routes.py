@@ -7,17 +7,17 @@ from utils import mailer
 
 @bp.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', api_url=settings.API_URL)
 
 
 @bp.route('/report')
 def report():
-    return render_template('report.html')
+    return render_template('report.html', api_url=settings.API_URL)
 
 
 @bp.route('/product')
 def product():
-    return render_template('product.html')
+    return render_template('product.html', api_url=settings.API_URL)
 
 
 @bp.route('/contact-request', methods=['POST'])
