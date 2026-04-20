@@ -18,11 +18,11 @@ nano .env  # ou utilisez votre éditeur préféré
 
 Les variables les plus importantes à paramétrer sont les suivantes :
 
-| Variable                    | Description                                           | Exemple             |
-|-----------------------------|-------------------------------------------------------|---------------------|
-| `N8N_HOST`                  | Adresse ou domaine du service n8n                     | `127.0.0.1`         |
-| `N8N_PORT`                  | Port d’exposition du service web                      | `5678`              |
-| `WEBHOOK_URL`               | URL publique utilisée (ou adresse ) pour les webhooks n8n           | `http://127.0.0.1/` |
+| Variable                    | Description                                               | Exemple             |
+|-----------------------------|-----------------------------------------------------------|---------------------|
+| `N8N_HOST`                  | Adresse ip ou domaine du service n8n                      | `127.0.0.1`         |
+| `N8N_PORT`                  | Port d’exposition du service web                          | `5678 par default`  |
+| `WEBHOOK_URL`               | URL publique utilisée (ou adresse ) pour les webhooks n8n | `http://127.0.0.1/` |
 
 
 ### Étape 2 : Lancement du conteneur
@@ -110,10 +110,10 @@ Avant d'exécuter le workflow, vous devez configurer les identifiants (credentia
 
 3. Renseignez les informations suivantes selon l'API :
 
-   | Service             | Champs requis                |
-   |---------------------|------------------------------|
-   | Google Gemini(PaLM) Api account         | `API Key` (clé d'API Gemini) |
-   | Serper Auth account | `Value` (clé d'API Serper)   |
+   | Service             | Champs requis                                      |
+   |---------------------|----------------------------------------------------|
+   | Google Gemini(PaLM) Api account         | `API Key` : (clé d'API Gemini)                     |
+   | Serper Auth account | `Name` : X-API-KEY et `Value` : (clé d'API Serper) |
 
 4. **Testez la connexion** si l'option est disponible pour valider que les clés sont actives et correctes.
 
